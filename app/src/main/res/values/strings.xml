@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">StreamRecorder</string>
+    <string name="title_activity_main">Stream Recorder</string>
 </resources>
