@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">StreamRecorder</string>
     <string name="title_activity_main">Stream Recorder</string>
+    <string name="Unable_to_prepare_MediaRecorder">Unable to prepare MediaRecorder</string>
+    <string name="Unable_to_start_MediaRecorder">Unable to start MediaRecorder</string>
+    <string name="Unable_to_create_directory_">Unable to create directory:</string>
 </resources>
