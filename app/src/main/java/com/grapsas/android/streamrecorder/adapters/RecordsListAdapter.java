@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.grapsas.android.streamrecorder.R;
 import com.grapsas.android.streamrecorder.misc.FileListItem;
 
+
 public class RecordsListAdapter extends BaseAdapter {
 
     private FileListItem[] mFileListItems;
@@ -42,13 +43,22 @@ public class RecordsListAdapter extends BaseAdapter {
     @Override
     public View getView( int position, View convertView, ViewGroup parent ) {
         if( convertView == null ) {
-            LayoutInflater inflater = (LayoutInflater) parent.getContext().getSystemService( Context.LAYOUT_INFLATER_SERVICE );
+            LayoutInflater inflater = (LayoutInflater) parent.getContext()
+                    .getSystemService( Context.LAYOUT_INFLATER_SERVICE );
             convertView = inflater.inflate( R.layout.list_item_record, parent, false );
         }
 
         FileListItem fileListItem = (FileListItem) getItem( position );
-        TextView textView = (TextView) convertView.findViewById( R.id.textView );
-        textView.setText( fileListItem.getmName() );
+
+        TextView fileName = (TextView) convertView.findViewById( R.id.fileName );
+        TextView modified = (TextView) convertView.findViewById( R.id.modifiedV );
+        TextView size = (TextView) convertView.findViewById( R.id.sizeV );
+//        TextView duration = (TextView) convertView.findViewById( R.id.durationV );
+
+        fileName.setText( fileListItem.getName() );
+        modified.setText( fileListItem.getModifiedHuman() );
+        size.setText( fileListItem.getSizeHuman( parent.getContext() ) );
+//        duration.setText( fileListItem.getDuration()+"" );
 
         return convertView;
     }
