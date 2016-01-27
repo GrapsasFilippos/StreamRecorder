@@ -3,9 +3,13 @@ package com.grapsas.android.streamrecorder.misc;
 
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.io.File;
+import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 
 public class IO {
 
@@ -20,18 +24,26 @@ public class IO {
                 + "/" + WORKING_DIRECTORY_NAME + "/";
     }
 
-    public static boolean checkWorkingDirectory() throws IOException {
-        File wDir = new File( getWorkingDirectory() );
-
-        if( !wDir.exists() ) {
-            if( !wDir.mkdirs() )
+    private static int checkDirectory( @NonNull File directory, boolean autoCrate ) throws IOException {
+        if( !directory.exists() ) {
+            if( !autoCrate )
+                throw new IOException( "Directory doesn't exist", 3 );
+            else if( !directory.mkdirs() ) {
                 throw new IOException( "Unable to create directories", 1 );
-            return true;
+            }
+            return 1;
+
         }
-        if( !wDir.isDirectory() )
+        if( !directory.isDirectory() )
             throw new IOException( "Isn't directory", 2 );
 
-        return true;
+        return 0;
+    }
+
+    public static int checkWorkingDirectory() throws IOException {
+        File wDir = new File( getWorkingDirectory() );
+
+        return checkDirectory( wDir, true );
     }
 
     @NonNull
@@ -53,5 +65,46 @@ public class IO {
     public static String one2tow( int number ) {
         return (number < 10) ? "0" + number : number+"";
     }
+
+    @Nullable
+    public static File[] getFileList( @NonNull String directoryPath ) throws IOException {
+        File dir = new File( directoryPath );
+        checkDirectory( dir, false );
+
+        return dir.listFiles();
+    }
+
+    @Nullable
+    private static ComparableFiles[] getRecords() {
+        File[] filesList = null;
+        ComparableFiles[] comparableFiles = null;
+
+        try {
+            filesList = getFileList( getWorkingDirectory() );
+        } catch( com.grapsas.android.streamrecorder.misc.IOException e ) {
+            e.printStackTrace();
+        } finally {
+            if( filesList == null )
+                return null;
+            comparableFiles = new ComparableFiles[ filesList.length ];
+            for( int i = 0; i < filesList.length; i++ )
+                comparableFiles[ i ] = new ComparableFiles( filesList[ i ] );
+        }
+
+        Arrays.sort( comparableFiles, Collections.reverseOrder() );
+
+        return comparableFiles;
+    }
+
+    @Nullable
+    public static ArrayDeque< FileListItem > getRecordsDeque() {
+        return FileListItem.getFilesDeque( getRecords() );
+    }
+
+    @Nullable
+    public static FileListItem[] getRecordsArray() {
+        return FileListItem.getFilesArray( getRecords() );
+    }
+
 
 }

@@ -2,6 +2,7 @@ package com.grapsas.android.streamrecorder;
 
 import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -9,8 +10,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.widget.Chronometer;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 
+import com.grapsas.android.streamrecorder.adapters.RecordsListAdapter;
 import com.grapsas.android.streamrecorder.misc.IO;
 
 import java.io.IOException;
@@ -18,20 +22,28 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
-    private View recordingView;
     // TODO: Add elevation
     private RelativeLayout recordingLayout;
+    private View recordingView;
+    private Chronometer chronometer;
+    private ListView listView;
     private FloatingActionButton fab;
 
     private MediaRecorder recorder;
-
+    private RecordsListAdapter adapter;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_main );
+
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
+
+        this.recordingLayout = (RelativeLayout) findViewById( R.id.recordingLayout );
+        this.adapter = new RecordsListAdapter( IO.getRecordsArray() );
+        this.listView = (ListView) findViewById( R.id.listView );
+        this.listView.setAdapter( adapter );
 
         fab = ( FloatingActionButton ) findViewById( R.id.fab );
         fab.setOnClickListener( new View.OnClickListener() {
@@ -44,8 +56,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         } );
+    }
 
-        this.recordingLayout = (RelativeLayout) findViewById( R.id.recordingLayout );
+    @Override
+    protected void onResume() {
+        super.onResume();
+        this.refreshListView();
+    }
+
+    @Override
+    protected void onPause() {
+        this.stopRecording();
+        super.onPause();
     }
 
 
@@ -71,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                     stopRecording();
                 }
             } );
+            this.chronometer = (Chronometer) findViewById( R.id.chronometer );
         }
         // Reuse recordingView
         else
@@ -85,6 +108,12 @@ public class MainActivity extends AppCompatActivity {
 
         hideBottomLayout();
         this.fab.show();
+    }
+
+
+    private void refreshListView() {
+        this.adapter.refreshData( IO.getRecordsArray() );
+        this.adapter.notifyDataSetChanged();
     }
 
     public void startRecording() {
@@ -142,6 +171,9 @@ public class MainActivity extends AppCompatActivity {
                     .show();
             return;
         }
+
+        this.chronometer.setBase( SystemClock.elapsedRealtime() );
+        this.chronometer.start();
     }
 
     /*
@@ -152,13 +184,18 @@ public class MainActivity extends AppCompatActivity {
      * - MediaRecorder.start() ( errorStage: 2 )
      */
     public void stopRecording( int errorStage ) {
+        if( this.recorder == null )
+            return;
         if( errorStage == 0 || errorStage >= 2 )
-            recorder.stop();
-        recorder.release();
-        recorder = null;
+            this.recorder.stop();
+        this.recorder.release();
+        this.recorder = null;
 
         if( errorStage == 0 || errorStage >= 2 )
             this.hideRecordingView();
+
+        this.chronometer.stop();
+        this.refreshListView();
     }
 
     public void stopRecording() {
