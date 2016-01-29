@@ -31,8 +31,14 @@
         <ViewStub
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/stub_import"
+            android:id="@+id/stub_recording"
             android:layout="@layout/recording" />
+
+        <ViewStub
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/stub_playing"
+            android:layout="@layout/playing" />
 
     </RelativeLayout>
 

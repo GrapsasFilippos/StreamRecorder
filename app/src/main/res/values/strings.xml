@@ -5,4 +5,9 @@
     <string name="Unable_to_start_MediaRecorder">Unable to start MediaRecorder</string>
     <string name="Unable_to_create_directory_">Unable to create directory:</string>
     <string name="Recording">Recording</string>
+    <string name="Unable_to_set_data_source">Unable to set data source</string>
+    <string name="Unable_to_prepare_MediaPlayer">Unable to prepare MediaPlayer</string>
+    <string name="Is_t_directory_">Is\'t directory!</string>
+    <string name="Is_t_directory__">Is\'t directory:</string>
+    <string name="Directory_doesn_t_exist__">Directory doesn\'t exist:</string>
 </resources>

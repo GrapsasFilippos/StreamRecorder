@@ -1,36 +1,40 @@
 package com.grapsas.android.streamrecorder;
 
-import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
-import android.widget.Chronometer;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.grapsas.android.streamrecorder.adapters.RecordsListAdapter;
+import com.grapsas.android.streamrecorder.misc.FileListItem;
 import com.grapsas.android.streamrecorder.misc.IO;
+import com.grapsas.android.streamrecorder.misc.MediaPlayerView;
+import com.grapsas.android.streamrecorder.misc.MediaRecorderView;
 
 import java.io.IOException;
+import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements
+        MediaRecorderView.Events,
+        MediaPlayerView.Events {
 
     // TODO: Add elevation
     private RelativeLayout recordingLayout;
-    private View recordingView;
-    private Chronometer chronometer;
+    private MediaRecorderView mediaRecorderView;
+    private MediaPlayerView mediaPlayerView;
     private ListView listView;
     private FloatingActionButton fab;
 
-    private MediaRecorder recorder;
     private RecordsListAdapter adapter;
+
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -40,20 +44,25 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
 
-        this.recordingLayout = (RelativeLayout) findViewById( R.id.recordingLayout );
-        this.adapter = new RecordsListAdapter( IO.getRecordsArray() );
-        this.listView = (ListView) findViewById( R.id.listView );
-        this.listView.setAdapter( adapter );
-
         fab = ( FloatingActionButton ) findViewById( R.id.fab );
         fab.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View view ) {
-                if( recorder == null ) {
-                    startRecording();
-                } else {
-                    stopRecording();
-                }
+                startRecording();
+            }
+        } );
+
+        this.mediaRecorderView = new MediaRecorderView( this, R.id.stub_recording );
+        this.mediaPlayerView = new MediaPlayerView( this, R.id.stub_playing );
+        this.recordingLayout = (RelativeLayout) findViewById( R.id.recordingLayout );
+        this.adapter = new RecordsListAdapter( this.getRecordsArray() );
+        this.listView = ( ListView) findViewById( R.id.listView );
+        this.listView.setAdapter( adapter );
+        this.listView = (ListView) findViewById( R.id.listView );
+        this.listView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick( AdapterView< ? > parent, View view, int position, long id ) {
+                startPlaying( ( FileListItem ) adapter.getItem( position ) );
             }
         } );
     }
@@ -67,9 +76,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         this.stopRecording();
+        this.stopPlaying();
         super.onPause();
     }
 
+
+    private void refreshListView() {
+        this.adapter.refreshData( this.getRecordsArray() );
+        this.adapter.notifyDataSetChanged();
+    }
 
     private void showBottomLayout() {
         ViewGroup.LayoutParams params = this.recordingLayout.getLayoutParams();
@@ -83,123 +98,145 @@ public class MainActivity extends AppCompatActivity {
         this.recordingLayout.setLayoutParams( params );
     }
 
-    private void showRecordingView() {
-        // Use recordingView for first time.
-        if( this.recordingView == null ) {
-            this.recordingView = ( ( ViewStub ) findViewById( R.id.stub_import ) ).inflate();
-            this.recordingView.findViewById( R.id.stop ).setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    stopRecording();
-                }
-            } );
-            this.chronometer = (Chronometer) findViewById( R.id.chronometer );
-        }
-        // Reuse recordingView
-        else
-            this.recordingView.setVisibility( View.VISIBLE );
+    @NonNull
+    private FileListItem[] getRecordsArray() {
+        FileListItem[] fileListItem;
+        String errorMessage = null;
 
+        try {
+            IO.checkWorkingDirectory();
+            fileListItem = IO.getRecordsArray();
+        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
+            fileListItem = new FileListItem[ 0 ];
+            e.printStackTrace();
+            switch( e.getCode() ) {
+                case 1:
+                    errorMessage = getString( R.string.Unable_to_create_directory_ );
+                    break;
+                case 2:
+                    errorMessage = getString( R.string.Is_t_directory__ ) + " "
+                            + IO.getWorkingDirectory();
+                    break;
+                case 3:
+                    errorMessage = getString( R.string.Directory_doesn_t_exist__ ) + " "
+                            + IO.getWorkingDirectory();
+                    break;
+                default:
+                    throw new RuntimeException( "Unexpected error!" );
+            }
+        }
+
+        if( errorMessage != null )
+            Snackbar.make(
+                    fab,
+                    errorMessage,
+                    Snackbar.LENGTH_LONG )
+                    .show();
+
+        return fileListItem;
+    }
+
+
+    /*
+     * MediaRecorderView
+     */
+    private void startRecording() {
+        try {
+            this.mediaRecorderView.startRecording();
+        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
+            e.printStackTrace();
+            if( e.getCode() == 1) {
+                Snackbar.make(
+                        fab,
+                        getString( R.string.Unable_to_create_directory_ )
+                                + " " + IO.getWorkingDirectory(),
+                        Snackbar.LENGTH_LONG
+                ).show();
+                return;// To be sure and for the future
+            }
+            else if( e.getCode() == 2 ) {
+                Snackbar.make(
+                        fab,
+                        getString( R.string.Unable_to_prepare_MediaRecorder )
+                                + " " + IO.getWorkingDirectory(),
+                        Snackbar.LENGTH_LONG
+                ).show();
+                return;// To be sure and for the future
+            }
+        } catch( IOException e ) {
+            e.printStackTrace();
+            Snackbar.make( fab, R.string.Unable_to_prepare_MediaRecorder, Snackbar.LENGTH_LONG )
+                    .show();
+        }
+        catch( IllegalStateException e ) {
+            e.printStackTrace();
+            Snackbar.make( fab, R.string.Unable_to_start_MediaRecorder, Snackbar.LENGTH_LONG )
+                    .show();
+        }
+    }
+
+    private  void stopRecording() {
+        this.mediaRecorderView.stopRecording();
+    }
+
+
+    /*
+     * MediaPlayerView
+     */
+    private void startPlaying( FileListItem fileListItem ) {
+        try {
+            this.mediaPlayerView.startPlaying( fileListItem );
+        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
+            e.printStackTrace();
+            int errorCode = e.getCode();
+            switch( errorCode ) {
+                case 1:
+                    Snackbar.make( fab, R.string.Unable_to_set_data_source, Snackbar.LENGTH_LONG )
+                            .show();
+                    break;
+                case 2:
+                    Snackbar.make( fab, R.string.Unable_to_prepare_MediaPlayer, Snackbar.LENGTH_LONG )
+                            .show();
+                    break;
+            }
+        }
+    }
+
+    private void stopPlaying() {
+        this.mediaPlayerView.stopPlaying();
+    }
+
+
+    /*
+     * Implements interface MediaRecorderView.Events
+     */
+    @Override
+    public void onStartRecording() {
         this.fab.hide();
         showBottomLayout();
     }
 
-    private void hideRecordingView() {
-        this.recordingView.setVisibility( View.GONE );
-
+    @Override
+    public void onStopRecording() {
         hideBottomLayout();
+        this.refreshListView();
         this.fab.show();
     }
 
 
-    private void refreshListView() {
-        this.adapter.refreshData( IO.getRecordsArray() );
-        this.adapter.notifyDataSetChanged();
-    }
-
-    public void startRecording() {
-        try {
-            IO.checkWorkingDirectory();
-        } catch( com.grapsas.android.streamrecorder.misc.IOException e ) {
-            e.printStackTrace();
-            if( e.getCode() == 1) {
-                Snackbar.make(
-                    fab,
-                    getString( R.string.Unable_to_create_directory_ )
-                        + " " + IO.getWorkingDirectory(),
-                    Snackbar.LENGTH_LONG
-                ).show();
-                return;
-            }
-            else if( e.getCode() == 2 ) {
-                Snackbar.make(
-                    fab,
-                    getString( R.string.Unable_to_prepare_MediaRecorder )
-                        + " " + IO.getWorkingDirectory(),
-                    Snackbar.LENGTH_LONG
-                ).show();
-                return;
-            }
-        }
-
-        String outputFilePath = IO.getWorkingDirectory() + IO.generateFileName() + ".3gp";
-
-        recorder = new MediaRecorder();
-        recorder.setAudioSource( MediaRecorder.AudioSource.MIC );
-        recorder.setOutputFormat( MediaRecorder.OutputFormat.THREE_GPP );
-        recorder.setOutputFile( outputFilePath );
-        recorder.setAudioEncoder( MediaRecorder.AudioEncoder.AMR_NB );
-
-        try {
-            recorder.prepare();
-        } catch( IOException e ) {
-            e.printStackTrace();
-            this.stopRecording( 1 );
-            Snackbar.make( fab, R.string.Unable_to_prepare_MediaRecorder, Snackbar.LENGTH_LONG )
-                    .show();
-            return;
-        }
-
-        this.showRecordingView();
-
-        try {
-            recorder.start();
-        }
-        catch( IllegalStateException e ) {
-            e.printStackTrace();
-            this.stopRecording( 2 );
-            Snackbar.make( fab, R.string.Unable_to_start_MediaRecorder, Snackbar.LENGTH_LONG )
-                    .show();
-            return;
-        }
-
-        this.chronometer.setBase( SystemClock.elapsedRealtime() );
-        this.chronometer.start();
-    }
-
     /*
-     * Recording steps must be with the following order for errorStage parameter:
-     * - No errors ( errorStage: 0 )
-     * - MediaRecorder.prepare() ( errorStage: 1 )
-     * - this.showRecording()
-     * - MediaRecorder.start() ( errorStage: 2 )
+     * Implements interface MediaPlayerView.Events
      */
-    public void stopRecording( int errorStage ) {
-        if( this.recorder == null )
-            return;
-        if( errorStage == 0 || errorStage >= 2 )
-            this.recorder.stop();
-        this.recorder.release();
-        this.recorder = null;
-
-        if( errorStage == 0 || errorStage >= 2 )
-            this.hideRecordingView();
-
-        this.chronometer.stop();
-        this.refreshListView();
+    @Override
+    public void onStartPlaying() {
+        this.fab.hide();
+        showBottomLayout();
     }
 
-    public void stopRecording() {
-        this.stopRecording( 0 );
+    @Override
+    public void onStopPlaying() {
+        hideBottomLayout();
+        this.fab.show();
     }
 
 }

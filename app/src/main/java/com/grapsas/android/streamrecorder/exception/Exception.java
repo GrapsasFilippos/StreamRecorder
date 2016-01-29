@@ -1,4 +1,4 @@
-package com.grapsas.android.streamrecorder.misc;
+package com.grapsas.android.streamrecorder.exception;
 
 
 public class Exception extends java.lang.Exception {
@@ -16,6 +16,11 @@ public class Exception extends java.lang.Exception {
 
     public Exception( String detailMessage, int code ) {
         super( detailMessage );
+        this.code = code;
+    }
+
+    public Exception( String detailMessage, int code, Throwable cause ) {
+        super( detailMessage, cause);
         this.code = code;
     }
 
