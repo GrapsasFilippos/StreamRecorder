@@ -11,6 +11,7 @@ import android.widget.Chronometer;
 
 import com.grapsas.android.streamrecorder.R;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
@@ -70,36 +71,16 @@ public class MediaRecorderView {
         AppCompatActivity activity = this.getActivity();
         if( activity == null )
             return;
-//        try {
-            IO.checkWorkingDirectory();
-//        } catch( IOException e ) {
-//            e.printStackTrace();
-//            if( e.getCode() == 1) {
-//                Snackbar.make(
-//                        fab,
-//                        activity.getString( R.string.Unable_to_create_directory_ )
-//                                + " " + IO.getWorkingDirectory(),
-//                        Snackbar.LENGTH_LONG
-//                ).show();
-//                return;
-//            }
-//            else if( e.getCode() == 2 ) {
-//                Snackbar.make(
-//                        fab,
-//                        activity.getString( R.string.Unable_to_prepare_MediaRecorder )
-//                                + " " + IO.getWorkingDirectory(),
-//                        Snackbar.LENGTH_LONG
-//                ).show();
-//                return;
-//            }
-//        }
+//        IO.checkWorkingDirectory();
+//        String outputFilePath = IO.getWorkingDirectory() + IO.generateFileName() + ".3gp";
 
-        String outputFilePath = IO.getWorkingDirectory() + IO.generateFileName() + ".3gp";
+//        File outputFile = File.createTempFile( IO.generateFileName(), ".3gp" );
 
         recorder = new MediaRecorder();
         recorder.setAudioSource( MediaRecorder.AudioSource.MIC );
         recorder.setOutputFormat( MediaRecorder.OutputFormat.THREE_GPP );
-        recorder.setOutputFile( outputFilePath );
+//        recorder.setOutputFile( IO.create() );
+        recorder.setOutputFile( IOV21.create() );
         recorder.setAudioEncoder( MediaRecorder.AudioEncoder.AMR_NB );
 
         try {
@@ -107,9 +88,6 @@ public class MediaRecorderView {
         } catch( java.io.IOException e ) {
             e.printStackTrace();
             this.stopRecording( 1 );
-//            Snackbar.make( fab, R.string.Unable_to_prepare_MediaRecorder, Snackbar.LENGTH_LONG )
-//                    .show();
-//            return;
             throw e;
         }
 
@@ -122,9 +100,6 @@ public class MediaRecorderView {
         catch( IllegalStateException e ) {
             e.printStackTrace();
             this.stopRecording( 2 );
-//            Snackbar.make( fab, R.string.Unable_to_start_MediaRecorder, Snackbar.LENGTH_LONG )
-//                    .show();
-//            return;
             throw e;
         }
 

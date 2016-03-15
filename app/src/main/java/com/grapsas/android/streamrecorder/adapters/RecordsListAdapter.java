@@ -53,12 +53,10 @@ public class RecordsListAdapter extends BaseAdapter {
         TextView fileName = (TextView) convertView.findViewById( R.id.fileName );
         TextView modified = (TextView) convertView.findViewById( R.id.modifiedV );
         TextView size = (TextView) convertView.findViewById( R.id.sizeV );
-//        TextView duration = (TextView) convertView.findViewById( R.id.durationV );
 
         fileName.setText( fileListItem.getName() );
         modified.setText( fileListItem.getModifiedHuman() );
         size.setText( fileListItem.getSizeHuman( parent.getContext() ) );
-//        duration.setText( fileListItem.getDuration()+"" );
 
         return convertView;
     }

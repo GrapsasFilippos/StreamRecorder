@@ -1,10 +1,17 @@
 package com.grapsas.android.streamrecorder;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.UriPermission;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.provider.DocumentFile;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +20,21 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.grapsas.android.streamrecorder.adapters.RecordsListAdapter;
+import com.grapsas.android.streamrecorder.exception.NeedActivityException;
+import com.grapsas.android.streamrecorder.exception.NeedWorkingDirectoryException;
 import com.grapsas.android.streamrecorder.misc.FileListItem;
 import com.grapsas.android.streamrecorder.misc.IO;
+import com.grapsas.android.streamrecorder.misc.IOV21;
 import com.grapsas.android.streamrecorder.misc.MediaPlayerView;
 import com.grapsas.android.streamrecorder.misc.MediaRecorderView;
+import com.grapsas.android.streamrecorder.misc.MyLog;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity implements
+public class MainActivity extends MyActivity implements
         MediaRecorderView.Events,
         MediaPlayerView.Events {
 
@@ -32,10 +44,16 @@ public class MainActivity extends AppCompatActivity implements
     private MediaPlayerView mediaPlayerView;
     private ListView listView;
     private FloatingActionButton fab;
+    private Snackbar snackbar;
 
     private RecordsListAdapter adapter;
 
+    private boolean flag = true;
 
+
+    /*
+     * Activity Overrides
+     */
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
@@ -55,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements
         this.mediaRecorderView = new MediaRecorderView( this, R.id.stub_recording );
         this.mediaPlayerView = new MediaPlayerView( this, R.id.stub_playing );
         this.recordingLayout = (RelativeLayout) findViewById( R.id.recordingLayout );
-        this.adapter = new RecordsListAdapter( this.getRecordsArray() );
+        this.adapter = new RecordsListAdapter( new FileListItem[ 0 ] );
         this.listView = ( ListView) findViewById( R.id.listView );
         this.listView.setAdapter( adapter );
         this.listView = (ListView) findViewById( R.id.listView );
@@ -69,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onResume() {
+        MyLog.d( "----------------" );
         super.onResume();
         this.refreshListView();
     }
@@ -80,9 +99,27 @@ public class MainActivity extends AppCompatActivity implements
         super.onPause();
     }
 
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, Intent data ) {
+        if( resultCode != RESULT_OK )
+            return;
+        switch( requestCode ) {
+            case IOV21.DIR_PICKER_RESULT_CODE:
+                App.getInstance().setLastActivity( this );
+                IOV21.resultDirectoryPicker( data.getData() );
+                if( this.snackbar != null )
+                    this.snackbar.dismiss();
+                break;
+        }
+    }
 
+
+    /*
+     * GUI tools.
+     */
     private void refreshListView() {
-        this.adapter.refreshData( this.getRecordsArray() );
+        MyLog.d( "refreshListView" );
+        this.adapter.refreshData( this.getRecords() );
         this.adapter.notifyDataSetChanged();
     }
 
@@ -98,43 +135,107 @@ public class MainActivity extends AppCompatActivity implements
         this.recordingLayout.setLayoutParams( params );
     }
 
+
+    /*
+     * Tools
+     */
     @NonNull
-    private FileListItem[] getRecordsArray() {
-        FileListItem[] fileListItem;
-        String errorMessage = null;
+    private FileListItem[] getRecordsV21() {
+        FileListItem[] records;
 
         try {
-            IO.checkWorkingDirectory();
-            fileListItem = IO.getRecordsArray();
-        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
-            fileListItem = new FileListItem[ 0 ];
+            records = IO.getRecords_FLIArray();
+        } catch( NeedActivityException e ) {
+            MyLog.e( "NeedActivityException" );
             e.printStackTrace();
-            switch( e.getCode() ) {
-                case 1:
-                    errorMessage = getString( R.string.Unable_to_create_directory_ );
-                    break;
-                case 2:
-                    errorMessage = getString( R.string.Is_t_directory__ ) + " "
-                            + IO.getWorkingDirectory();
-                    break;
-                case 3:
-                    errorMessage = getString( R.string.Directory_doesn_t_exist__ ) + " "
-                            + IO.getWorkingDirectory();
-                    break;
-                default:
-                    throw new RuntimeException( "Unexpected error!" );
-            }
+            records = new FileListItem[ 0 ];
+            if( this.snackbar != null )
+                this.snackbar.dismiss();
+            this.snackbar = Snackbar
+                    .make( this.fab, "Unable to access records.", Snackbar.LENGTH_INDEFINITE );
+            this.snackbar.setAction( "Retry", new View.OnClickListener() {
+                        @Override
+                        public void onClick( View v ) {
+                            refreshListView();
+                        }
+                    } );
+            this.snackbar.show();
+        } catch( NeedWorkingDirectoryException e ) {
+            MyLog.e( "NeedWorkingDirectoryException" );
+            e.printStackTrace();
+            records = new FileListItem[ 0 ];
+            if( this.snackbar != null )
+                this.snackbar.dismiss();
+            this.snackbar = Snackbar.make(
+                    this.fab,
+                    "Need read/write permissions to a directory for saving and play records.",
+                    Snackbar.LENGTH_INDEFINITE );
+            this.snackbar.setAction( "Select", new View.OnClickListener() {
+                        @Override
+                        public void onClick( View v ) {
+                            IOV21.launchDirectoryPicker();
+                        }
+                    } );
+            this.snackbar.show();
         }
 
-        if( errorMessage != null )
-            Snackbar.make(
-                    fab,
-                    errorMessage,
-                    Snackbar.LENGTH_LONG )
-                    .show();
-
-        return fileListItem;
+        return records;
     }
+
+    private FileListItem[] getRecordsV16() {
+        FileListItem[] records;
+
+        records = new FileListItem[ 0 ];
+
+        return records;
+    }
+
+    private FileListItem[] getRecords() {
+        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
+            return this.getRecordsV21();
+        else if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ) {
+            return this.getRecordsV16();
+        }
+
+        throw new RuntimeException( "Unexpected version!" );
+    }
+//    @NonNull
+//    private FileListItem[] getRecordsArray() {
+//        FileListItem[] fileListItem;
+//        String errorMessage = null;
+//
+//        try {
+//            IO.checkWorkingDirectory();
+//            fileListItem = IO.getRecordsArray();
+//        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
+//            fileListItem = new FileListItem[ 0 ];
+//            e.printStackTrace();
+//            switch( e.getCode() ) {
+//                case 1:
+//                    errorMessage = getString( R.string.Unable_to_create_directory_ );
+//                    break;
+//                case 2:
+//                    errorMessage = getString( R.string.Is_t_directory__ ) + " "
+//                            + IO.getWorkingDirectory();
+//                    break;
+//                case 3:
+//                    errorMessage = getString( R.string.Directory_doesn_t_exist__ ) + " "
+//                            + IO.getWorkingDirectory();
+//                    break;
+//                default:
+//                    throw new RuntimeException( "Unexpected error!" );
+//            }
+//        }
+//
+//        if( errorMessage != null )
+//            Snackbar.make(
+//                    fab,
+//                    errorMessage,
+//                    Snackbar.LENGTH_LONG )
+//                    .show();
+//
+//        return fileListItem;
+//    }
 
 
     /*
@@ -149,18 +250,20 @@ public class MainActivity extends AppCompatActivity implements
                 Snackbar.make(
                         fab,
                         getString( R.string.Unable_to_create_directory_ )
-                                + " " + IO.getWorkingDirectory(),
-                        Snackbar.LENGTH_LONG
+//                                + " " + IO.getWorkingDirectory(),
+                        ,Snackbar.LENGTH_LONG
                 ).show();
+                //noinspection UnnecessaryReturnStatement
                 return;// To be sure and for the future
             }
             else if( e.getCode() == 2 ) {
                 Snackbar.make(
                         fab,
                         getString( R.string.Unable_to_prepare_MediaRecorder )
-                                + " " + IO.getWorkingDirectory(),
-                        Snackbar.LENGTH_LONG
+//                                + " " + IO.getWorkingDirectory(),
+                        ,Snackbar.LENGTH_LONG
                 ).show();
+                //noinspection UnnecessaryReturnStatement
                 return;// To be sure and for the future
             }
         } catch( IOException e ) {
@@ -176,7 +279,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private  void stopRecording() {
-        this.mediaRecorderView.stopRecording();
     }
 
 

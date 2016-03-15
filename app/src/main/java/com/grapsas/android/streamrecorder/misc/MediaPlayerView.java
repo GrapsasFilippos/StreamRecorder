@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.grapsas.android.streamrecorder.R;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
@@ -91,7 +92,7 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
             return;
         this.stopPlaying( true, false );
 
-        Uri fileUri = Uri.parse( fileListItem.getPath() );
+        Uri fileUri = fileListItem.getUri();
         this.player = new MediaPlayer();
         this.player.setOnCompletionListener( this );
         this.player.setAudioStreamType( AudioManager.STREAM_MUSIC );
