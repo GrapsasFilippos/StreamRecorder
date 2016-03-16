@@ -4,4 +4,9 @@
     <string name="Unable_to_create_directory_">Δεν ήταν δυνατή η δημιουργία του καταλόγου:</string>
     <string name="Unable_to_prepare_MediaRecorder">Δεν ήταν δυνατή η προετοιμασία του MediaRecorder</string>
     <string name="Unable_to_start_MediaRecorder">Δεν ήταν δυνατή η εκκίνηση του MeidaRecorder</string>
+    <string name="Directory_doesn_t_exist__">Δεν υπάρχει ο κατάλογος:</string>
+    <string name="Is_t_directory_">Δεν είναι κατάλογος!</string>
+    <string name="Is_t_directory__">Δεν είναι κατάλογος:</string>
+    <string name="Unable_to_prepare_MediaPlayer">Δεν ήταν δυνατή η προετοιμασία του MediaPlayer</string>
+    <string name="Unable_to_set_data_source">Δεν ήταν δυνατός ο ορισμός της πηγής δεδομένων </string>
 </resources>

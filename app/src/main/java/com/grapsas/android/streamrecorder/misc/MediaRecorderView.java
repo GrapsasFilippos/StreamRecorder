@@ -11,7 +11,7 @@ import android.widget.Chronometer;
 
 import com.grapsas.android.streamrecorder.R;
 
-import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
@@ -71,16 +71,15 @@ public class MediaRecorderView {
         AppCompatActivity activity = this.getActivity();
         if( activity == null )
             return;
-//        IO.checkWorkingDirectory();
-//        String outputFilePath = IO.getWorkingDirectory() + IO.generateFileName() + ".3gp";
 
-//        File outputFile = File.createTempFile( IO.generateFileName(), ".3gp" );
+        FileDescriptor fd = IO.createNewFile();
+        if( fd == null )
+            return;
 
         recorder = new MediaRecorder();
         recorder.setAudioSource( MediaRecorder.AudioSource.MIC );
         recorder.setOutputFormat( MediaRecorder.OutputFormat.THREE_GPP );
-//        recorder.setOutputFile( IO.create() );
-        recorder.setOutputFile( IOV21.create() );
+        recorder.setOutputFile( fd );
         recorder.setAudioEncoder( MediaRecorder.AudioEncoder.AMR_NB );
 
         try {

@@ -1,17 +1,12 @@
 package com.grapsas.android.streamrecorder;
 
+
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.UriPermission;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v4.provider.DocumentFile;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,14 +19,13 @@ import com.grapsas.android.streamrecorder.exception.NeedActivityException;
 import com.grapsas.android.streamrecorder.exception.NeedWorkingDirectoryException;
 import com.grapsas.android.streamrecorder.misc.FileListItem;
 import com.grapsas.android.streamrecorder.misc.IO;
+import com.grapsas.android.streamrecorder.misc.IOV16;
 import com.grapsas.android.streamrecorder.misc.IOV21;
 import com.grapsas.android.streamrecorder.misc.MediaPlayerView;
 import com.grapsas.android.streamrecorder.misc.MediaRecorderView;
 import com.grapsas.android.streamrecorder.misc.MyLog;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 
 public class MainActivity extends MyActivity implements
@@ -182,60 +176,15 @@ public class MainActivity extends MyActivity implements
         return records;
     }
 
-    private FileListItem[] getRecordsV16() {
-        FileListItem[] records;
-
-        records = new FileListItem[ 0 ];
-
-        return records;
-    }
-
     private FileListItem[] getRecords() {
         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
             return this.getRecordsV21();
         else if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ) {
-            return this.getRecordsV16();
+            return IOV16.getRecords_FLIArray();
         }
 
         throw new RuntimeException( "Unexpected version!" );
     }
-//    @NonNull
-//    private FileListItem[] getRecordsArray() {
-//        FileListItem[] fileListItem;
-//        String errorMessage = null;
-//
-//        try {
-//            IO.checkWorkingDirectory();
-//            fileListItem = IO.getRecordsArray();
-//        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
-//            fileListItem = new FileListItem[ 0 ];
-//            e.printStackTrace();
-//            switch( e.getCode() ) {
-//                case 1:
-//                    errorMessage = getString( R.string.Unable_to_create_directory_ );
-//                    break;
-//                case 2:
-//                    errorMessage = getString( R.string.Is_t_directory__ ) + " "
-//                            + IO.getWorkingDirectory();
-//                    break;
-//                case 3:
-//                    errorMessage = getString( R.string.Directory_doesn_t_exist__ ) + " "
-//                            + IO.getWorkingDirectory();
-//                    break;
-//                default:
-//                    throw new RuntimeException( "Unexpected error!" );
-//            }
-//        }
-//
-//        if( errorMessage != null )
-//            Snackbar.make(
-//                    fab,
-//                    errorMessage,
-//                    Snackbar.LENGTH_LONG )
-//                    .show();
-//
-//        return fileListItem;
-//    }
 
 
     /*

@@ -61,6 +61,7 @@ public class IOV21 {
 //            for( UriPermission permission : UriPermissions) {
 //                MyLog.d( permission.toString() );
 //            }
+            //noinspection UnnecessaryLocalVariable
             Uri wDir = UriPermissions.get( 0 ).getUri();
             return wDir;
         }
@@ -85,7 +86,7 @@ public class IOV21 {
     }
 
     @Nullable
-    public static FileDescriptor create() {
+    public static FileDescriptor createNewFile() {
         Activity lastActivity = App.getInstance().getLastActivity();
         Uri wDirUri;
         try {

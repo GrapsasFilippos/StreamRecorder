@@ -19,12 +19,10 @@ public class ComparableFiles implements Comparable< ComparableFiles > {
 
     @Override
     public int compareTo( ComparableFiles another ) {
-        if( this.mFile.lastModified() > another.getFile().lastModified() )
-            return 1;
-        else if( this.mFile.lastModified() < another.getFile().lastModified() )
-            return -1;
-        else
+        if( this.mFile.lastModified() == another.getFile().lastModified() )
             return 0;
+
+        return ( this.mFile.lastModified() > another.getFile().lastModified() ) ? -1 : 1;
     }
 
 }
