@@ -30,6 +30,8 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
     private TextView durationT;
     private ImageButton playPauseButton;
 
+    private FileListItem fli;
+
 
     public MediaPlayerView( AppCompatActivity activity, int stubResourceId ) {
         this.weakActivity = new WeakReference<>( activity );
@@ -74,19 +76,25 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
         fileNameV.setText( fileName );
         fileSizeV.setText( fileSize );
         this.durationT.setText( duration );
+
+        this.triggerOnPlayerViewShow();
     }
 
     private void hidePlayingView() {
         if( this.playingView == null )
             return;
         this.playingView.setVisibility( View.GONE );
+
+        this.triggerOnPlayerViewHide();
     }
 
 
     /*
      * Media Player
      */
-    public void startPlaying( FileListItem fileListItem ) throws com.grapsas.android.streamrecorder.exception.IOException {
+    public void startPlaying( FileListItem fileListItem )
+            throws com.grapsas.android.streamrecorder.exception.IOException {
+        this.fli = fileListItem;
         AppCompatActivity activity = getActivity();
         if( activity == null )
             return;
@@ -174,20 +182,37 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
     public interface Events {
         void onStartPlaying();
         void onStopPlaying();
+        void onPlayerViewShow( FileListItem fileListItem );
+        void onPlayerViewHide();
     }
 
     private void triggerOnStartPlaying() {
         AppCompatActivity activity = getActivity();
         if( activity == null || !( activity instanceof Events ) )
             return;
-        ( (Events) activity).onStartPlaying();
+        ( (Events) activity ).onStartPlaying();
     }
 
     private void triggerOnStopPlaying() {
         AppCompatActivity activity = getActivity();
         if( activity == null || !( activity instanceof Events ) )
             return;
-        ( (Events) activity).onStopPlaying();
+        ( (Events) activity ).onStopPlaying();
+    }
+
+    private void triggerOnPlayerViewShow() {
+        AppCompatActivity activity = getActivity();
+        if( activity == null || !( activity instanceof Events ) )
+            return;
+        ( (Events) activity ).onPlayerViewShow( this.fli );
+    }
+
+    private void triggerOnPlayerViewHide() {
+        this.fli = null;
+        AppCompatActivity activity = getActivity();
+        if( activity == null || !( activity instanceof Events ) )
+            return;
+        ( (Events) activity ).onPlayerViewHide();
     }
 
 }

@@ -10,4 +10,9 @@
     <string name="Is_t_directory_">Is\'t directory!</string>
     <string name="Is_t_directory__">Is\'t directory:</string>
     <string name="Directory_doesn_t_exist__">Directory doesn\'t exist:</string>
+    <string name="Remove">Remove</string>
+    <string name="FileHasntRemoved">File hasn\'t removed.</string>
+    <string name="TheFileRemovedSuccessfully">The file removed successfully.</string>
+    <string name="RemoveFilePermanently">The following file will be permanently deleted:</string>
+    <string name="Cancel">Cancel</string>
 </resources>

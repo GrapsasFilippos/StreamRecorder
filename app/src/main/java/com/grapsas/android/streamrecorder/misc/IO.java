@@ -1,6 +1,7 @@
 package com.grapsas.android.streamrecorder.misc;
 
 
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,6 +9,7 @@ import android.support.annotation.Nullable;
 import com.grapsas.android.streamrecorder.exception.NeedActivityException;
 import com.grapsas.android.streamrecorder.exception.NeedWorkingDirectoryException;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.util.Calendar;
 
@@ -48,6 +50,14 @@ public class IO {
             return IOV21.createNewFile();
         else
             return IOV16.createNewFile();
+    }
+
+    public static boolean removeFile( File file ) {
+        return file.delete();
+    }
+
+    public static boolean removeFile( Uri file ) {
+        return removeFile( new File( file.getPath() ) );
     }
 
 

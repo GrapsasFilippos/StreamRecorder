@@ -31,10 +31,10 @@ public class IOV16 {
                 + "/" + WORKING_DIRECTORY_NAME + "/";
     }
 
-    private static int checkDirectory( @NonNull File directory, boolean autoCrate )
+    private static int checkDirectory( @NonNull File directory, boolean autoCreate )
             throws IOException {
         if( !directory.exists() ) {
-            if( !autoCrate )
+            if( !autoCreate )
                 throw new IOException( "Directory doesn't exist", 3 );
             else if( !directory.mkdirs() ) {
                 throw new IOException( "Unable to create directories", 1 );
@@ -52,10 +52,14 @@ public class IOV16 {
         return checkDirectory( directory, true );
     }
 
-    public static int checkWorkingDirectory() throws IOException {
+    public static int checkWorkingDirectory( boolean autoCreate ) throws IOException {
         File wDir = new File( getWorkingDirectoryPath() );
 
-        return checkDirectory( wDir, true );
+        return checkDirectory( wDir, autoCreate );
+    }
+
+    public static int checkWorkingDirectory() throws IOException {
+        return checkWorkingDirectory( true );
     }
 
     @NonNull

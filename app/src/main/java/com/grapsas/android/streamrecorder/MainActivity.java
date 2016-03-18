@@ -2,12 +2,15 @@ package com.grapsas.android.streamrecorder;
 
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -15,6 +18,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.grapsas.android.streamrecorder.adapters.RecordsListAdapter;
+import com.grapsas.android.streamrecorder.dialogs.DeleteFile;
 import com.grapsas.android.streamrecorder.exception.NeedActivityException;
 import com.grapsas.android.streamrecorder.exception.NeedWorkingDirectoryException;
 import com.grapsas.android.streamrecorder.misc.FileListItem;
@@ -30,7 +34,8 @@ import java.io.IOException;
 
 public class MainActivity extends MyActivity implements
         MediaRecorderView.Events,
-        MediaPlayerView.Events {
+        MediaPlayerView.Events,
+        DeleteFile.Response {
 
     // TODO: Add elevation
     private RelativeLayout recordingLayout;
@@ -39,10 +44,11 @@ public class MainActivity extends MyActivity implements
     private ListView listView;
     private FloatingActionButton fab;
     private Snackbar snackbar;
+    private Menu pMenu;
 
     private RecordsListAdapter adapter;
 
-    private boolean flag = true;
+    private FileListItem pFli;
 
 
     /*
@@ -77,6 +83,24 @@ public class MainActivity extends MyActivity implements
                 startPlaying( ( FileListItem ) adapter.getItem( position ) );
             }
         } );
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu ) {
+        getMenuInflater().inflate( R.menu.activity_main_menu, menu );
+        this.pMenu = menu;
+        return super.onCreateOptionsMenu( menu );
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) {
+        switch( item.getItemId() ) {
+            case R.id.remove:
+                DeleteFile.newInstance( pFli.getUri() ).show( getFragmentManager(), "oeo" );
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -290,4 +314,43 @@ public class MainActivity extends MyActivity implements
         this.fab.show();
     }
 
+    @Override
+    public void onPlayerViewShow( FileListItem fileListItem ) {
+        this.pFli = fileListItem;
+
+        this.pMenu.getItem( 0 ).setVisible( true );
+    }
+
+    @Override
+    public void onPlayerViewHide() {
+        this.pFli = null;
+
+        this.pMenu.getItem( 0 ).setVisible( false );
+    }
+
+
+    /*
+     * Implements interface DeleteFile.Response
+     */
+    @Override
+    public void deleteResponse( boolean delete, @NonNull Uri file ) {
+        if( !delete )
+            return;
+        String removeMessage;
+
+        if( this.snackbar != null )
+            this.snackbar.dismiss();
+
+        if( IO.removeFile( file ) ) {
+            removeMessage = getString( R.string.TheFileRemovedSuccessfully );
+            this.onStopPlaying();
+            this.refreshListView();
+        }
+        else
+            removeMessage = getString( R.string.FileHasntRemoved );
+
+        this.snackbar = Snackbar
+                .make( this.fab, removeMessage, Snackbar.LENGTH_LONG );
+        this.snackbar.show();
+    }
 }
