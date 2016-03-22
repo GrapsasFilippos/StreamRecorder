@@ -44,7 +44,7 @@ public class MediaRecorderView {
             return;
         // Use recordingView for first time.
         if( this.recordingView == null ) {
-            this.recordingView = ( ( ViewStub ) activity.findViewById( R.id.stub_recording ) ).inflate();
+            this.recordingView = ( ( ViewStub ) activity.findViewById( this.mStubResourceId ) ).inflate();
             this.recordingView.findViewById( R.id.stop ).setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {

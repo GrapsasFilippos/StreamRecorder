@@ -1,26 +1,35 @@
 package com.grapsas.android.streamrecorder;
 
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 
-import com.grapsas.android.streamrecorder.adapters.RecordsListAdapter;
+import com.grapsas.android.lib.slidingtabs.slidingtabs.SlidingTabLayout;
 import com.grapsas.android.streamrecorder.dialogs.DeleteFile;
 import com.grapsas.android.streamrecorder.exception.NeedActivityException;
 import com.grapsas.android.streamrecorder.exception.NeedWorkingDirectoryException;
+import com.grapsas.android.streamrecorder.fragments.MicRecordsFragment;
+import com.grapsas.android.streamrecorder.fragments.StreamsRecordsFragment;
+import com.grapsas.android.streamrecorder.interfaces.OnDataChanged;
+import com.grapsas.android.streamrecorder.interfaces.OnPageChangeListener;
 import com.grapsas.android.streamrecorder.misc.FileListItem;
 import com.grapsas.android.streamrecorder.misc.IO;
 import com.grapsas.android.streamrecorder.misc.IOV16;
@@ -28,25 +37,32 @@ import com.grapsas.android.streamrecorder.misc.IOV21;
 import com.grapsas.android.streamrecorder.misc.MediaPlayerView;
 import com.grapsas.android.streamrecorder.misc.MediaRecorderView;
 import com.grapsas.android.streamrecorder.misc.MyLog;
+import com.grapsas.android.streamrecorder.misc.ViewPagerListener;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MainActivity extends MyActivity implements
+        MicRecordsFragment.OnFragmentInteractionListener,
+        StreamsRecordsFragment.OnFragmentInteractionListener,
         MediaRecorderView.Events,
         MediaPlayerView.Events,
-        DeleteFile.Response {
+        DeleteFile.Response,
+        OnPageChangeListener {
 
     // TODO: Add elevation
     private RelativeLayout recordingLayout;
     private MediaRecorderView mediaRecorderView;
     private MediaPlayerView mediaPlayerView;
-    private ListView listView;
+
+    private PagerAdapter pagerAdapter;
+    private ViewPager viewPager;
     private FloatingActionButton fab;
     private Snackbar snackbar;
     private Menu pMenu;
-
-    private RecordsListAdapter adapter;
 
     private FileListItem pFli;
 
@@ -62,27 +78,22 @@ public class MainActivity extends MyActivity implements
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
 
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        pagerAdapter = new PagerAdapter( fragmentManager, this );
+
+        viewPager = (ViewPager ) findViewById( R.id.viewPager );
+        viewPager.setAdapter( pagerAdapter );
+
+        SlidingTabLayout slidingTabs = (SlidingTabLayout ) findViewById(R.id.tabs);
+        slidingTabs.setDistributeEvenly( true );
+        slidingTabs.setViewPager( viewPager );
+        slidingTabs.setOnPageChangeListener( new ViewPagerListener( this ) );
+
         fab = ( FloatingActionButton ) findViewById( R.id.fab );
-        fab.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick( View view ) {
-                startRecording();
-            }
-        } );
 
         this.mediaRecorderView = new MediaRecorderView( this, R.id.stub_recording );
         this.mediaPlayerView = new MediaPlayerView( this, R.id.stub_playing );
         this.recordingLayout = (RelativeLayout) findViewById( R.id.recordingLayout );
-        this.adapter = new RecordsListAdapter( new FileListItem[ 0 ] );
-        this.listView = ( ListView) findViewById( R.id.listView );
-        this.listView.setAdapter( adapter );
-        this.listView = (ListView) findViewById( R.id.listView );
-        this.listView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick( AdapterView< ? > parent, View view, int position, long id ) {
-                startPlaying( ( FileListItem ) adapter.getItem( position ) );
-            }
-        } );
     }
 
     @Override
@@ -107,12 +118,11 @@ public class MainActivity extends MyActivity implements
     protected void onResume() {
         MyLog.d( "----------------" );
         super.onResume();
-        this.refreshListView();
     }
 
     @Override
     protected void onPause() {
-        this.stopRecording();
+        this.stopMicRecording();
         this.stopPlaying();
         super.onPause();
     }
@@ -135,12 +145,6 @@ public class MainActivity extends MyActivity implements
     /*
      * GUI tools.
      */
-    private void refreshListView() {
-        MyLog.d( "refreshListView" );
-        this.adapter.refreshData( this.getRecords() );
-        this.adapter.notifyDataSetChanged();
-    }
-
     private void showBottomLayout() {
         ViewGroup.LayoutParams params = this.recordingLayout.getLayoutParams();
         params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -174,7 +178,7 @@ public class MainActivity extends MyActivity implements
             this.snackbar.setAction( "Retry", new View.OnClickListener() {
                         @Override
                         public void onClick( View v ) {
-                            refreshListView();
+                            filesystemChanged();
                         }
                     } );
             this.snackbar.show();
@@ -200,12 +204,12 @@ public class MainActivity extends MyActivity implements
         return records;
     }
 
-    private FileListItem[] getRecords() {
+    @Override
+    public FileListItem[] getRecords() {
         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
             return this.getRecordsV21();
-        else if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ) {
+        else if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN )
             return IOV16.getRecords_FLIArray();
-        }
 
         throw new RuntimeException( "Unexpected version!" );
     }
@@ -214,7 +218,7 @@ public class MainActivity extends MyActivity implements
     /*
      * MediaRecorderView
      */
-    private void startRecording() {
+    private void startMicRecording() {
         try {
             this.mediaRecorderView.startRecording();
         } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
@@ -223,7 +227,6 @@ public class MainActivity extends MyActivity implements
                 Snackbar.make(
                         fab,
                         getString( R.string.Unable_to_create_directory_ )
-//                                + " " + IO.getWorkingDirectory(),
                         ,Snackbar.LENGTH_LONG
                 ).show();
                 //noinspection UnnecessaryReturnStatement
@@ -233,7 +236,6 @@ public class MainActivity extends MyActivity implements
                 Snackbar.make(
                         fab,
                         getString( R.string.Unable_to_prepare_MediaRecorder )
-//                                + " " + IO.getWorkingDirectory(),
                         ,Snackbar.LENGTH_LONG
                 ).show();
                 //noinspection UnnecessaryReturnStatement
@@ -251,14 +253,15 @@ public class MainActivity extends MyActivity implements
         }
     }
 
-    private  void stopRecording() {
+    private  void stopMicRecording() {
     }
 
 
     /*
      * MediaPlayerView
      */
-    private void startPlaying( FileListItem fileListItem ) {
+    @Override
+    public void startPlaying( FileListItem fileListItem ) {
         try {
             this.mediaPlayerView.startPlaying( fileListItem );
         } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
@@ -294,7 +297,7 @@ public class MainActivity extends MyActivity implements
     @Override
     public void onStopRecording() {
         hideBottomLayout();
-        this.refreshListView();
+        this.filesystemChanged();
         this.fab.show();
     }
 
@@ -344,7 +347,7 @@ public class MainActivity extends MyActivity implements
         if( IO.removeFile( file ) ) {
             removeMessage = getString( R.string.TheFileRemovedSuccessfully );
             this.onStopPlaying();
-            this.refreshListView();
+            this.filesystemChanged();
         }
         else
             removeMessage = getString( R.string.FileHasntRemoved );
@@ -353,4 +356,105 @@ public class MainActivity extends MyActivity implements
                 .make( this.fab, removeMessage, Snackbar.LENGTH_LONG );
         this.snackbar.show();
     }
+
+    /*
+     * Implements interface OnPageChangeListener
+     */
+    @Override
+    public void pagerStartMoving() {
+    }
+
+    @Override
+    public void pagerFinishMoving() {
+        int icon;
+        if( this.viewPager.getCurrentItem() == 0 ) {
+            icon = R.drawable.ic_record_voice_over_white_24px;
+            this.fab.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.colorAccent ) ) );
+            this.fab.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick( View view ) {
+                    startMicRecording();
+                }
+            } );
+        }
+        else if( this.viewPager.getCurrentItem() == 1 ) {
+            icon = R.drawable.ic_add_white_24dp;
+            this.fab.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.colorPrimary ) ) );
+            this.fab.setOnClickListener( null );
+        }
+        else
+            return;
+
+        this.fab.setRippleColor( Color.RED );
+        // app:borderWidth="0dp"
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            this.fab.setImageDrawable( getResources().getDrawable( icon, this.getTheme() ) );
+        } else {
+            this.fab.setImageDrawable(getResources().getDrawable( icon ) );
+        }
+    }
+
+
+
+
+
+
+
+    private void filesystemChanged() {
+        pagerAdapter.refreshDataSets();
+    }
+
+    private static class PagerAdapter extends FragmentPagerAdapter {
+
+        private Context pContext;
+        List< WeakReference< OnDataChanged > > dataSets = new ArrayList<>();
+
+        public PagerAdapter( FragmentManager fm, Context context ) {
+            super( fm );
+            this.pContext = context;
+            dataSets.add( null );
+            dataSets.add( null );
+        }
+
+        public void refreshDataSets() {
+            for( WeakReference< OnDataChanged > wdc : dataSets ) {
+                if( wdc != null && wdc.get() != null )
+                    wdc.get().dataChanged();
+            }
+        }
+
+        @Override
+        public Fragment getItem( int position ) {
+            switch( position ) {
+                case 0:
+                    MicRecordsFragment mFragment = new MicRecordsFragment();
+                    dataSets.set( position, new WeakReference< OnDataChanged >( mFragment ) );
+                    return mFragment;
+                case 1:
+                    StreamsRecordsFragment sFragment = new StreamsRecordsFragment();
+                    dataSets.set( position, new WeakReference< OnDataChanged >( sFragment ) );
+                    return sFragment;
+            }
+            return null;
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch( position ) {
+                case 0:
+                    return this.pContext.getString( R.string.Mic );
+                case 1:
+                    return this.pContext.getString( R.string.Streams );
+            }
+
+            return super.getPageTitle(position);
+        }
+    }
+
 }

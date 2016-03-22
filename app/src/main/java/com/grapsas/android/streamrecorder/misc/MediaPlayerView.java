@@ -111,7 +111,6 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
             com.grapsas.android.streamrecorder.exception.IOException e2 =
                     new com.grapsas.android.streamrecorder.exception.IOException(
                             "Unable to MediaPlayer.setDataSource()", 1, e );
-            MyLog.e( "setdatasource" );
             throw e2;
         }
         try {
@@ -121,12 +120,10 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
             com.grapsas.android.streamrecorder.exception.IOException e2 =
                     new com.grapsas.android.streamrecorder.exception.IOException(
                             "Unable to MediaPlayer.prepare()", 2, e );
-            MyLog.e( "prepare" );
             throw e2;
 
         }
         int duration = this.player.getDuration();
-        MyLog.d( duration+"" );
         duration /= 1000;
         String durationS = String.format( "%d:%02d:%02d", duration / 3600, ( duration % 3600 ) / 60, ( duration % 60 ) );
         this.showPlayingView( fileListItem.getName(), fileListItem.getSizeHuman( activity ), durationS );

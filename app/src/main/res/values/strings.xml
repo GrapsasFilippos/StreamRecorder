@@ -15,4 +15,6 @@
     <string name="TheFileRemovedSuccessfully">The file removed successfully.</string>
     <string name="RemoveFilePermanently">The following file will be permanently deleted:</string>
     <string name="Cancel">Cancel</string>
+    <string name="Mic">Mic</string>
+    <string name="Streams">Streams</string>
 </resources>
