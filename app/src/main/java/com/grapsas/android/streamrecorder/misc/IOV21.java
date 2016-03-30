@@ -119,6 +119,15 @@ public class IOV21 {
         }
     }
 
+    public static boolean removeFile( Uri uri ) {
+        Activity lastActivity = App.getInstance().getLastActivity();
+        if( lastActivity == null )
+            return false;
+        DocumentFile dFile = DocumentFile.fromSingleUri( lastActivity, uri );
+
+        return dFile.delete();
+    }
+
 
     /*
      * Records tools

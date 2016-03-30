@@ -57,12 +57,11 @@ public class IO {
             return IOV16.createNewFile( prefix, suffix );
     }
 
-    public static boolean removeFile( File file ) {
-        return file.delete();
-    }
-
-    public static boolean removeFile( Uri file ) {
-        return removeFile( new File( file.getPath() ) );
+    public static boolean removeFile( Uri uri ) {
+        if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
+            return IOV21.removeFile( uri );
+        else
+            return IOV16.removeFile( new File( uri.getPath() ) );
     }
 
 

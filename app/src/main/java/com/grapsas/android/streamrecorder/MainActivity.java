@@ -106,7 +106,7 @@ public class MainActivity extends MyActivity implements
     public boolean onOptionsItemSelected( MenuItem item ) {
         switch( item.getItemId() ) {
             case R.id.remove:
-                DeleteFile.newInstance( pFli.getUri() ).show( getFragmentManager(), "oeo" );
+                DeleteFile.newInstance( pFli.getUri() ).show( getFragmentManager(), null );
                 return true;
             default:
                 return super.onOptionsItemSelected( item );

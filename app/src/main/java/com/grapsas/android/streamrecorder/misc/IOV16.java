@@ -107,6 +107,10 @@ public class IOV16 {
         return fd;
     }
 
+    public static boolean removeFile( File file ) {
+        return file.delete();
+    }
+
 
     /*
      * Records tools
