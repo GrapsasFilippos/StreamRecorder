@@ -86,7 +86,7 @@ public class IOV21 {
     }
 
     @Nullable
-    public static FileDescriptor createNewFile() {
+    public static FileDescriptor createNewFile( @NonNull String prefix, @Nullable String suffix ) {
         Activity lastActivity = App.getInstance().getLastActivity();
         Uri wDirUri;
         try {
@@ -102,7 +102,7 @@ public class IOV21 {
             return null;
         DocumentFile wDirDF = DocumentFile.fromTreeUri( lastActivity, wDirUri );
 
-        DocumentFile newFile = wDirDF.createFile( "video/3gpp", IO.generateFileName() );
+        DocumentFile newFile = wDirDF.createFile( null, prefix + IO.generateFileName() + suffix );
         try {
             AssetFileDescriptor afd = lastActivity
                     .getContentResolver()
@@ -124,14 +124,20 @@ public class IOV21 {
      * Records tools
      */
     @NonNull
-    private static DocumentFile[] getRecords_DF() throws
+    private static DocumentFile[] getRecords_DF( int type) throws
             NeedActivityException, NeedWorkingDirectoryException {
         DocumentFile[] dFiles = getFiles();
 
         ArrayList< ComparableDocumentFile > recordsAL = new ArrayList<>();
         for( DocumentFile dFile : dFiles ) {
-            if( dFile.getType().equals( "audio/3gpp" ) )
+            if(
+                ( ( type & IO.MIC_RECORDS ) == IO.MIC_RECORDS &&
+                        dFile.getName().substring( 0, 2 ).equals( "m." ) ) ||
+                ( ( type & IO.STREAM_RECORDS ) == IO.STREAM_RECORDS &&
+                        dFile.getName().substring( 0, 2 ).equals( "s." ) )
+                ) {
                 recordsAL.add( new ComparableDocumentFile( dFile ) );
+            }
         }
         Collections.sort( recordsAL );
 
@@ -144,9 +150,9 @@ public class IOV21 {
     }
 
     @NonNull
-    public static FileListItem[] getRecords_FLIArray() throws
+    public static FileListItem[] getRecords_FLIArray( int type ) throws
             NeedWorkingDirectoryException, NeedActivityException {
-        DocumentFile[] dFiles = getRecords_DF();
+        DocumentFile[] dFiles = getRecords_DF( type );
 
         FileListItem[] fileListItems = new FileListItem[ dFiles.length ];
         for( int i = 0; i < dFiles.length; i++ )

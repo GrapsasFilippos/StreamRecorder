@@ -16,6 +16,11 @@ import java.util.Calendar;
 
 public class IO {
 
+    public static int MIC_RECORDS = 1;
+    public static int STREAM_RECORDS = 2;
+    public static int ALL_RECORDS = 3;
+
+
     /*
      * General tools
      */
@@ -45,11 +50,11 @@ public class IO {
      * Filesystem tools
      */
     @Nullable
-    public static FileDescriptor createNewFile() {
+    public static FileDescriptor createNewFile( @NonNull String prefix, @NonNull String suffix ) {
         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
-            return IOV21.createNewFile();
+            return IOV21.createNewFile( prefix, suffix);
         else
-            return IOV16.createNewFile();
+            return IOV16.createNewFile( prefix, suffix );
     }
 
     public static boolean removeFile( File file ) {
@@ -65,16 +70,22 @@ public class IO {
      * Records tools
      */
     @NonNull
-    public static FileListItem[] getRecords_FLIArray() throws
+    public static FileListItem[] getRecords_FLIArray( int type ) throws
             NeedActivityException, NeedWorkingDirectoryException {
         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
             //noinspection UnnecessaryLocalVariable
-            FileListItem[] files = IOV21.getRecords_FLIArray();
+            FileListItem[] files = IOV21.getRecords_FLIArray( type );
             return files;
         }
         else {
-            return IOV16.getRecords_FLIArray();
+            return IOV16.getRecords_FLIArray( type );
         }
+    }
+
+    @NonNull
+    public static FileListItem[] getRecords_FLIArray() throws
+            NeedActivityException, NeedWorkingDirectoryException {
+        return getRecords_FLIArray( ALL_RECORDS );
     }
 
 }

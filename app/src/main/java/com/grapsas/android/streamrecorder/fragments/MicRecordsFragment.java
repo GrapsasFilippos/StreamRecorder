@@ -14,6 +14,7 @@ import com.grapsas.android.streamrecorder.R;
 import com.grapsas.android.streamrecorder.adapters.RecordsListAdapter;
 import com.grapsas.android.streamrecorder.interfaces.OnDataChanged;
 import com.grapsas.android.streamrecorder.misc.FileListItem;
+import com.grapsas.android.streamrecorder.misc.IO;
 
 
 public class MicRecordsFragment extends Fragment implements OnDataChanged {
@@ -83,7 +84,7 @@ public class MicRecordsFragment extends Fragment implements OnDataChanged {
     private void refreshListView() {
         if( this.mListener == null )
             return;
-        this.adapter.refreshData( mListener.getRecords() );
+        this.adapter.refreshData( mListener.getRecords( IO.MIC_RECORDS ) );
         this.adapter.notifyDataSetChanged();
     }
 
@@ -102,7 +103,7 @@ public class MicRecordsFragment extends Fragment implements OnDataChanged {
      */
     public interface OnFragmentInteractionListener {
 
-        FileListItem[] getRecords();
+        FileListItem[] getRecords( int type );
         void startPlaying( FileListItem fileListItem );
 
     }

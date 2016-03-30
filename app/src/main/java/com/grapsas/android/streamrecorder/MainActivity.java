@@ -39,7 +39,6 @@ import com.grapsas.android.streamrecorder.misc.MediaRecorderView;
 import com.grapsas.android.streamrecorder.misc.MyLog;
 import com.grapsas.android.streamrecorder.misc.ViewPagerListener;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +109,7 @@ public class MainActivity extends MyActivity implements
                 DeleteFile.newInstance( pFli.getUri() ).show( getFragmentManager(), "oeo" );
                 return true;
             default:
-                return super.onOptionsItemSelected(item);
+                return super.onOptionsItemSelected( item );
         }
     }
 
@@ -118,6 +117,7 @@ public class MainActivity extends MyActivity implements
     protected void onResume() {
         MyLog.d( "----------------" );
         super.onResume();
+        pagerFinishMoving();
     }
 
     @Override
@@ -162,11 +162,11 @@ public class MainActivity extends MyActivity implements
      * Tools
      */
     @NonNull
-    private FileListItem[] getRecordsV21() {
+    private FileListItem[] getRecordsV21( int type ) {
         FileListItem[] records;
 
         try {
-            records = IO.getRecords_FLIArray();
+            records = IO.getRecords_FLIArray( type );
         } catch( NeedActivityException e ) {
             MyLog.e( "NeedActivityException" );
             e.printStackTrace();
@@ -205,11 +205,11 @@ public class MainActivity extends MyActivity implements
     }
 
     @Override
-    public FileListItem[] getRecords() {
+    public FileListItem[] getRecords( int type ) {
         if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP )
-            return this.getRecordsV21();
+            return this.getRecordsV21( type );
         else if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN )
-            return IOV16.getRecords_FLIArray();
+            return IOV16.getRecords_FLIArray( type );
 
         throw new RuntimeException( "Unexpected version!" );
     }
@@ -219,41 +219,47 @@ public class MainActivity extends MyActivity implements
      * MediaRecorderView
      */
     private void startMicRecording() {
-        try {
-            this.mediaRecorderView.startRecording();
-        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
-            e.printStackTrace();
-            if( e.getCode() == 1) {
-                Snackbar.make(
-                        fab,
-                        getString( R.string.Unable_to_create_directory_ )
-                        ,Snackbar.LENGTH_LONG
-                ).show();
-                //noinspection UnnecessaryReturnStatement
-                return;// To be sure and for the future
-            }
-            else if( e.getCode() == 2 ) {
-                Snackbar.make(
-                        fab,
-                        getString( R.string.Unable_to_prepare_MediaRecorder )
-                        ,Snackbar.LENGTH_LONG
-                ).show();
-                //noinspection UnnecessaryReturnStatement
-                return;// To be sure and for the future
-            }
-        } catch( IOException e ) {
-            e.printStackTrace();
-            Snackbar.make( fab, R.string.Unable_to_prepare_MediaRecorder, Snackbar.LENGTH_LONG )
-                    .show();
-        }
-        catch( IllegalStateException e ) {
-            e.printStackTrace();
-            Snackbar.make( fab, R.string.Unable_to_start_MediaRecorder, Snackbar.LENGTH_LONG )
-                    .show();
-        }
+//        try {
+//            this.mediaRecorderView.startRecording();
+//        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
+//            e.printStackTrace();
+//            if( e.getCode() == 1) {
+//                Snackbar.make(
+//                        fab,
+//                        getString( R.string.Unable_to_create_directory_ )
+//                        ,Snackbar.LENGTH_LONG
+//                ).show();
+//                //noinspection UnnecessaryReturnStatement
+//                return;// To be sure and for the future
+//            }
+//            else if( e.getCode() == 2 ) {
+//                Snackbar.make(
+//                        fab,
+//                        getString( R.string.Unable_to_prepare_MediaRecorder )
+//                        ,Snackbar.LENGTH_LONG
+//                ).show();
+//                //noinspection UnnecessaryReturnStatement
+//                return;// To be sure and for the future
+//            }
+//        } catch( IOException e ) {
+//            e.printStackTrace();
+//            Snackbar.make( fab, R.string.Unable_to_prepare_MediaRecorder, Snackbar.LENGTH_LONG )
+//                    .show();
+//        }
+//        catch( IllegalStateException e ) {
+//            e.printStackTrace();
+//            Snackbar.make( fab, R.string.Unable_to_start_MediaRecorder, Snackbar.LENGTH_LONG )
+//                    .show();
+//        }
+
+        this.mediaRecorderView.startRecording( MediaRecorderView.MIC_RECORDER );
     }
 
     private  void stopMicRecording() {
+    }
+
+    private void startStreamRecording() {
+        this.mediaRecorderView.startRecording( MediaRecorderView.STREAM_RECORDER );
     }
 
 
@@ -380,7 +386,12 @@ public class MainActivity extends MyActivity implements
         else if( this.viewPager.getCurrentItem() == 1 ) {
             icon = R.drawable.ic_add_white_24dp;
             this.fab.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.colorPrimary ) ) );
-            this.fab.setOnClickListener( null );
+            this.fab.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick( View v ) {
+                    startStreamRecording();
+                }
+            } );
         }
         else
             return;

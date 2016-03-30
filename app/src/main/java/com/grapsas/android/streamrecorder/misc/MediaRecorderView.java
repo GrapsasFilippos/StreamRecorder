@@ -1,7 +1,6 @@
 package com.grapsas.android.streamrecorder.misc;
 
 
-import android.media.MediaRecorder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -10,18 +9,24 @@ import android.view.ViewStub;
 import android.widget.Chronometer;
 
 import com.grapsas.android.streamrecorder.R;
+import com.grapsas.android.streamrecorder.misc.media.MicRecorder;
+import com.grapsas.android.streamrecorder.misc.media.Recorder;
+import com.grapsas.android.streamrecorder.misc.media.StreamRecorder;
 
 import java.io.FileDescriptor;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 
 public class MediaRecorderView {
 
+    public static final int MIC_RECORDER = 1;
+    public static final int STREAM_RECORDER = 2;
+
+
     private int mStubResourceId;
     private WeakReference< AppCompatActivity > weakActivity;
 
-    private MediaRecorder recorder;
+    private Recorder recorder;
 
     private View recordingView;
     private Chronometer chronometer;
@@ -38,23 +43,25 @@ public class MediaRecorderView {
     }
 
 
-    private void showRecordingView() {
+    private boolean createRecordingView() {
         AppCompatActivity activity = this.getActivity();
         if( activity == null )
-            return;
-        // Use recordingView for first time.
-        if( this.recordingView == null ) {
-            this.recordingView = ( ( ViewStub ) activity.findViewById( this.mStubResourceId ) ).inflate();
-            this.recordingView.findViewById( R.id.stop ).setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    stopRecording();
-                }
-            } );
-            this.chronometer = (Chronometer ) activity.findViewById( R.id.chronometer );
-        }
-        // Reuse recordingView
-        else
+            return false;
+        if( this.recordingView != null )
+            return false;
+        this.recordingView = ( ( ViewStub ) activity.findViewById( this.mStubResourceId ) ).inflate();
+        this.recordingView.findViewById( R.id.stop ).setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick( View v ) {
+                stopRecording();
+            }
+        } );
+        this.chronometer = ( Chronometer ) activity.findViewById( R.id.chronometer );
+        return true;
+    }
+
+    private void showRecordingView() {
+        if( !createRecordingView() )
             this.recordingView.setVisibility( View.VISIBLE );
     }
 
@@ -66,69 +73,57 @@ public class MediaRecorderView {
     /*
      * Media Recorder
      */
-    public void startRecording() throws com.grapsas.android.streamrecorder.exception.IOException,
-            IOException, IllegalStateException {
+    public void startRecording( int type ) {
         AppCompatActivity activity = this.getActivity();
         if( activity == null )
             return;
 
-        FileDescriptor fd = IO.createNewFile();
+        if( this.recorder != null ) {
+            this.stopRecording();
+            return;
+        }
+
+        FileDescriptor fd;
+        String prefix;
+        String suffix;
+        if( type == MIC_RECORDER ) {
+            prefix = "m.";
+            suffix = ".3gp";
+            this.recorder = new MicRecorder();
+        }
+        else if( type == STREAM_RECORDER ) {
+            prefix = "s.";
+            suffix = "";
+            createRecordingView();
+            this.recorder = new StreamRecorder( this.chronometer );
+        }
+        else
+            return;
+
+        fd = IO.createNewFile( prefix, suffix );
         if( fd == null )
             return;
 
-        recorder = new MediaRecorder();
-        recorder.setAudioSource( MediaRecorder.AudioSource.MIC );
-        recorder.setOutputFormat( MediaRecorder.OutputFormat.THREE_GPP );
-        recorder.setOutputFile( fd );
-        recorder.setAudioEncoder( MediaRecorder.AudioEncoder.AMR_NB );
-
-        try {
-            recorder.prepare();
-        } catch( java.io.IOException e ) {
-            e.printStackTrace();
-            this.stopRecording( 1 );
-            throw e;
+        if( !this.recorder.startRecording( fd ) ) {
+            this.stopRecording();
+            return;
         }
 
         this.showRecordingView();
         this.chronometer.setBase( SystemClock.elapsedRealtime() );
-
-        try {
-            recorder.start();
-        }
-        catch( IllegalStateException e ) {
-            e.printStackTrace();
-            this.stopRecording( 2 );
-            throw e;
-        }
-
         this.chronometer.start();
         this.triggerStartRecording();
     }
 
-    /*
-     * Recording steps must be with the following order for errorStage parameter:
-     * - No errors ( errorStage: 0 )
-     * - MediaRecorder.prepare() ( errorStage: 1 )
-     * - this.showRecording()
-     * - MediaRecorder.start() ( errorStage: 2 )
-     */
-    public void stopRecording( int errorStage ) {
-        if( this.recorder == null )
-            return;
-        if( errorStage == 0 || errorStage >= 2 )
-            this.recorder.stop();
-        this.recorder.release();
-        this.recorder = null;
-
-        if( errorStage == 0 || errorStage >= 2 )
-            this.hideRecordingView();
-
-        this.chronometer.stop();
-    }
 
     public void stopRecording() {
-        this.stopRecording( 0 );
+        if( this.recorder == null )
+            return;
+        this.recorder.stopRecording();
+        this.recorder = null;
+
+        this.chronometer.stop();
+        this.hideRecordingView();
         this.triggerStopRecording();
     }
 

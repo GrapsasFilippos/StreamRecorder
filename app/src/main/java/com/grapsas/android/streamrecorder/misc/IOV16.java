@@ -10,7 +10,7 @@ import com.grapsas.android.streamrecorder.exception.IOException;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -76,9 +76,9 @@ public class IOV16 {
     }
 
     @Nullable
-    public static FileDescriptor createNewFile() {
+    public static FileDescriptor createNewFile( @NonNull String prefix, @NonNull String suffix ) {
         File wDirFile = new File( getWorkingDirectoryPath() );
-        File newFile = new File( wDirFile, IO.generateFileName() + ".3gp" );
+        File newFile = new File( wDirFile, prefix + IO.generateFileName() + suffix );
 
         try {
             if( !newFile.createNewFile() )
@@ -88,9 +88,9 @@ public class IOV16 {
             return null;
         }
 
-        FileOutputStream fos;
+        RandomAccessFile raf;
         try {
-            fos = new FileOutputStream( newFile );
+            raf = new RandomAccessFile( newFile, "rw" );
         } catch( FileNotFoundException e ) {
             e.printStackTrace();
             return null;
@@ -98,7 +98,7 @@ public class IOV16 {
 
         FileDescriptor fd;
         try {
-            fd = fos.getFD();
+            fd = raf.getFD();
         } catch( java.io.IOException e ) {
             e.printStackTrace();
             return null;
@@ -112,7 +112,7 @@ public class IOV16 {
      * Records tools
      */
     @NonNull
-    private static ArrayList< ComparableFiles > getRecords() throws IOException {
+    private static ArrayList< ComparableFiles > getRecords( int type ) throws IOException {
         File[] filesList;
         ArrayList< ComparableFiles > comparableFiles = new ArrayList<>();
 
@@ -120,8 +120,13 @@ public class IOV16 {
         filesList = getFileList( getWorkingDirectoryPath() );
         for( int i = 0; i < filesList.length; i++ ) {
             fileName = filesList[ i ].getName();
-            if( fileName.substring( fileName.length() - 4).equals( ".3gp" ) ) {
-                comparableFiles.add( new ComparableFiles( filesList[i] ) );
+            if(
+                    ( ( type & IO.MIC_RECORDS ) == IO.MIC_RECORDS &&
+                            fileName.substring( 0, 2 ).equals( "m." ) ) ||
+                    ( ( type & IO.STREAM_RECORDS ) == IO.STREAM_RECORDS &&
+                            fileName.substring( 0, 2 ).equals( "s." ) )
+                ) {
+                comparableFiles.add( new ComparableFiles( filesList[ i ] ) );
             }
         }
 
@@ -131,11 +136,11 @@ public class IOV16 {
     }
 
     @NonNull
-    public static FileListItem[] getRecords_FLIArray() {
+    public static FileListItem[] getRecords_FLIArray( int type ) {
         FileListItem[] fli;
         ArrayList< ComparableFiles > recordsAL;
         try {
-            recordsAL = getRecords();
+            recordsAL = getRecords( type );
         } catch( IOException e ) {
             e.printStackTrace();
             return new FileListItem[ 0 ];
