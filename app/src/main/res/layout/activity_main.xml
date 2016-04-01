@@ -24,12 +24,37 @@
 
     <include layout="@layout/content_main"/>
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/micFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_record_voice_over_white_24px"/>
+        android:src="@drawable/ic_record_voice_over_white_24px" />
+
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/sFabMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_gravity="bottom|end">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/newFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_size="mini"
+            android:layout_gravity="bottom|end"
+            android:src="@drawable/ic_content_paste_white_24dp" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/favFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_size="mini"
+            android:layout_gravity="bottom|end"
+            android:src="@drawable/ic_star_white_24dp" />
+
+    </com.github.clans.fab.FloatingActionMenu>
 
 </android.support.design.widget.CoordinatorLayout>

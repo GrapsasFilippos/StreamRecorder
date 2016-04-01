@@ -3,13 +3,10 @@ package com.grapsas.android.streamrecorder;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,6 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.grapsas.android.lib.slidingtabs.slidingtabs.SlidingTabLayout;
 import com.grapsas.android.streamrecorder.dialogs.DeleteFile;
 import com.grapsas.android.streamrecorder.exception.NeedActivityException;
@@ -59,9 +58,13 @@ public class MainActivity extends MyActivity implements
 
     private PagerAdapter pagerAdapter;
     private ViewPager viewPager;
-    private FloatingActionButton fab;
     private Snackbar snackbar;
     private Menu pMenu;
+
+    private FloatingActionButton micFab;
+    private FloatingActionMenu sFabMenu;
+    private FloatingActionButton favFab;
+    private FloatingActionButton newFab;
 
     private FileListItem pFli;
 
@@ -80,15 +83,22 @@ public class MainActivity extends MyActivity implements
         FragmentManager fragmentManager = getSupportFragmentManager();
         pagerAdapter = new PagerAdapter( fragmentManager, this );
 
-        viewPager = (ViewPager ) findViewById( R.id.viewPager );
-        viewPager.setAdapter( pagerAdapter );
+        viewPager = ( ViewPager ) findViewById( R.id.viewPager );
+        if( viewPager != null )
+            viewPager.setAdapter( pagerAdapter );
 
         SlidingTabLayout slidingTabs = (SlidingTabLayout ) findViewById(R.id.tabs);
-        slidingTabs.setDistributeEvenly( true );
-        slidingTabs.setViewPager( viewPager );
-        slidingTabs.setOnPageChangeListener( new ViewPagerListener( this ) );
+        if( slidingTabs != null ) {
+            slidingTabs.setDistributeEvenly( true );
+            slidingTabs.setViewPager( viewPager );
+            slidingTabs.setOnPageChangeListener( new ViewPagerListener( this ) );
+        }
 
-        fab = ( FloatingActionButton ) findViewById( R.id.fab );
+        this.micFab = ( FloatingActionButton ) findViewById( R.id.micFab );
+        this.sFabMenu = ( FloatingActionMenu ) findViewById( R.id.sFabMenu );
+        this.favFab = ( FloatingActionButton ) findViewById( R.id.favFab );
+        this.newFab = ( FloatingActionButton ) findViewById( R.id.newFab );
+        this.initFabs();
 
         this.mediaRecorderView = new MediaRecorderView( this, R.id.stub_recording );
         this.mediaPlayerView = new MediaPlayerView( this, R.id.stub_playing );
@@ -157,10 +167,52 @@ public class MainActivity extends MyActivity implements
         this.recordingLayout.setLayoutParams( params );
     }
 
+    private void initFabs() {
+        this.micFab.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick( View v ) {
+                startMicRecording();
+            }
+        } );
+        this.favFab.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick( View v ) {
+                startStreamRecording();
+            }
+        } );
+        this.newFab.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick( View v ) {
+                startStreamRecording();
+            }
+        } );
+    }
+
+    private void showFab() {
+        this.hideFabs();
+        switch( this.viewPager.getCurrentItem() ) {
+            case 0:
+                this.micFab.show( false );
+                break;
+            case 1:
+                this.sFabMenu.showMenu( false );
+                break;
+        }
+    }
+
+    private void hideFabs() {
+        this.micFab.hide( false );
+        this.sFabMenu.hideMenu( false );
+    }
+
 
     /*
      * Tools
      */
+    private void filesystemChanged() {
+        this.pagerAdapter.refreshDataSets();
+    }
+
     @NonNull
     private FileListItem[] getRecordsV21( int type ) {
         FileListItem[] records;
@@ -174,7 +226,7 @@ public class MainActivity extends MyActivity implements
             if( this.snackbar != null )
                 this.snackbar.dismiss();
             this.snackbar = Snackbar
-                    .make( this.fab, "Unable to access records.", Snackbar.LENGTH_INDEFINITE );
+                    .make( this.micFab, "Unable to access records.", Snackbar.LENGTH_INDEFINITE );
             this.snackbar.setAction( "Retry", new View.OnClickListener() {
                         @Override
                         public void onClick( View v ) {
@@ -189,7 +241,7 @@ public class MainActivity extends MyActivity implements
             if( this.snackbar != null )
                 this.snackbar.dismiss();
             this.snackbar = Snackbar.make(
-                    this.fab,
+                    this.micFab,
                     "Need read/write permissions to a directory for saving and play records.",
                     Snackbar.LENGTH_INDEFINITE );
             this.snackbar.setAction( "Select", new View.OnClickListener() {
@@ -275,11 +327,11 @@ public class MainActivity extends MyActivity implements
             int errorCode = e.getCode();
             switch( errorCode ) {
                 case 1:
-                    Snackbar.make( fab, R.string.Unable_to_set_data_source, Snackbar.LENGTH_LONG )
+                    Snackbar.make( this.micFab, R.string.Unable_to_set_data_source, Snackbar.LENGTH_LONG )
                             .show();
                     break;
                 case 2:
-                    Snackbar.make( fab, R.string.Unable_to_prepare_MediaPlayer, Snackbar.LENGTH_LONG )
+                    Snackbar.make( this.micFab, R.string.Unable_to_prepare_MediaPlayer, Snackbar.LENGTH_LONG )
                             .show();
                     break;
             }
@@ -296,7 +348,7 @@ public class MainActivity extends MyActivity implements
      */
     @Override
     public void onStartRecording() {
-        this.fab.hide();
+        this.hideFabs();
         showBottomLayout();
     }
 
@@ -304,7 +356,7 @@ public class MainActivity extends MyActivity implements
     public void onStopRecording() {
         hideBottomLayout();
         this.filesystemChanged();
-        this.fab.show();
+        this.showFab();
     }
 
 
@@ -313,14 +365,14 @@ public class MainActivity extends MyActivity implements
      */
     @Override
     public void onStartPlaying() {
-        this.fab.hide();
+        this.hideFabs();
         showBottomLayout();
     }
 
     @Override
     public void onStopPlaying() {
         hideBottomLayout();
-        this.fab.show();
+        this.showFab();
     }
 
     @Override
@@ -359,63 +411,28 @@ public class MainActivity extends MyActivity implements
             removeMessage = getString( R.string.FileHasntRemoved );
 
         this.snackbar = Snackbar
-                .make( this.fab, removeMessage, Snackbar.LENGTH_LONG );
+                .make( this.micFab, removeMessage, Snackbar.LENGTH_LONG );
         this.snackbar.show();
     }
+
 
     /*
      * Implements interface OnPageChangeListener
      */
     @Override
     public void pagerStartMoving() {
+        this.hideFabs();
     }
 
     @Override
     public void pagerFinishMoving() {
-        int icon;
-        if( this.viewPager.getCurrentItem() == 0 ) {
-            icon = R.drawable.ic_record_voice_over_white_24px;
-            this.fab.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.colorAccent ) ) );
-            this.fab.setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    startMicRecording();
-                }
-            } );
-        }
-        else if( this.viewPager.getCurrentItem() == 1 ) {
-            icon = R.drawable.ic_add_white_24dp;
-            this.fab.setBackgroundTintList( ColorStateList.valueOf( getResources().getColor( R.color.colorPrimary ) ) );
-            this.fab.setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    startStreamRecording();
-                }
-            } );
-        }
-        else
-            return;
-
-        this.fab.setRippleColor( Color.RED );
-        // app:borderWidth="0dp"
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            this.fab.setImageDrawable( getResources().getDrawable( icon, this.getTheme() ) );
-        } else {
-            this.fab.setImageDrawable(getResources().getDrawable( icon ) );
-        }
+        this.showFab();
     }
 
 
-
-
-
-
-
-    private void filesystemChanged() {
-        pagerAdapter.refreshDataSets();
-    }
-
+    /*
+     * Inner classes
+     */
     private static class PagerAdapter extends FragmentPagerAdapter {
 
         private Context pContext;
