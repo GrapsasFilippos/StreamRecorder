@@ -1,4 +1,4 @@
-package com.grapsas.android.streamrecorder;
+package com.grapsas.android.streamrecorder.activities;
 
 
 import android.content.Context;
@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -22,6 +23,9 @@ import android.widget.RelativeLayout;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.grapsas.android.lib.slidingtabs.slidingtabs.SlidingTabLayout;
+import com.grapsas.android.streamrecorder.App;
+import com.grapsas.android.streamrecorder.MyActivity;
+import com.grapsas.android.streamrecorder.R;
 import com.grapsas.android.streamrecorder.dialogs.DeleteFile;
 import com.grapsas.android.streamrecorder.exception.NeedActivityException;
 import com.grapsas.android.streamrecorder.exception.NeedWorkingDirectoryException;
@@ -67,6 +71,7 @@ public class MainActivity extends MyActivity implements
     private FloatingActionButton newFab;
 
     private FileListItem pFli;
+    private String url4Rec;
 
 
     /*
@@ -148,6 +153,11 @@ public class MainActivity extends MyActivity implements
                 if( this.snackbar != null )
                     this.snackbar.dismiss();
                 break;
+            case FavoritesURLsActivity.RESULT_CODE:
+                String url = data.getStringExtra( FavoritesURLsActivity.RESULT_URL_KEY );
+                this.setUrl4Rec( url );
+                this.startStreamRecording();
+                break;
         }
     }
 
@@ -177,7 +187,7 @@ public class MainActivity extends MyActivity implements
         this.favFab.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
-                startStreamRecording();
+                startFavActivity();
             }
         } );
         this.newFab.setOnClickListener( new View.OnClickListener() {
@@ -188,21 +198,34 @@ public class MainActivity extends MyActivity implements
         } );
     }
 
-    private void showFab() {
+    private void showFab( boolean animate ) {
         this.hideFabs();
         switch( this.viewPager.getCurrentItem() ) {
             case 0:
-                this.micFab.show( false );
+                this.micFab.show( animate );
                 break;
             case 1:
-                this.sFabMenu.showMenu( false );
+                this.sFabMenu.showMenu( animate );
                 break;
         }
     }
 
+    private void showFab() {
+        this.showFab( false );
+    }
+
+    private void hideFabs( boolean animate ) {
+        this.micFab.hide( animate );
+        this.sFabMenu.hideMenu( animate );
+    }
+
     private void hideFabs() {
-        this.micFab.hide( false );
-        this.sFabMenu.hideMenu( false );
+        this.hideFabs( false );
+    }
+
+    protected void startFavActivity() {
+        Intent intent = new Intent( this, FavoritesURLsActivity.class );
+        startActivityForResult( intent, FavoritesURLsActivity.RESULT_CODE );
     }
 
 
@@ -264,6 +287,15 @@ public class MainActivity extends MyActivity implements
             return IOV16.getRecords_FLIArray( type );
 
         throw new RuntimeException( "Unexpected version!" );
+    }
+
+    private void setUrl4Rec( @Nullable String url ) {
+        this.url4Rec = url;
+    }
+
+    @Nullable
+    public String getUrl4Rec() {
+        return this.url4Rec;
     }
 
 
@@ -357,6 +389,7 @@ public class MainActivity extends MyActivity implements
         hideBottomLayout();
         this.filesystemChanged();
         this.showFab();
+        this.setUrl4Rec( null );
     }
 
 

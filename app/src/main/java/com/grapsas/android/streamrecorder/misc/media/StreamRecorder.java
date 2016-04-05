@@ -4,13 +4,11 @@ package com.grapsas.android.streamrecorder.misc.media;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.Chronometer;
 
 import com.grapsas.android.streamrecorder.misc.Misc;
-import com.grapsas.android.streamrecorder.misc.MyLog;
 
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
@@ -26,10 +24,12 @@ public class StreamRecorder implements Recorder {
     private ThreadsConnector pTC;
     private NetworkByteByByteCopy networkBBCp;
 
+    private String pUrl;
     private WeakReference< Chronometer > pwChronometer;
 
 
-    public StreamRecorder( Chronometer chronometer ) {
+    public StreamRecorder( String url, Chronometer chronometer ) {
+        this.pUrl = url;
         this.pwChronometer = new WeakReference<>( chronometer );
     }
 
@@ -50,7 +50,7 @@ public class StreamRecorder implements Recorder {
                 this.networkBBCp.cancel( true );
         }
 
-        this.pTC = new ThreadsConnector( fd );
+        this.pTC = new ThreadsConnector( fd, pUrl );
         if( this.getChronometer() != null )
             this.getChronometer().setOnChronometerTickListener(
                     ( new MediaChronometer( this.pTC ) ) );
@@ -105,17 +105,22 @@ public class StreamRecorder implements Recorder {
         private long pBytesRead;
         private boolean pRecordingFinished = false;
 
-        private int pDuration;
-        private long pBaseTime;
+        private String pUrl;
 
 
-        public ThreadsConnector( @NonNull FileDescriptor fileDescriptor ) {
+        public ThreadsConnector( @NonNull FileDescriptor fileDescriptor, @NonNull String url ) {
+            this.pUrl = url;
             this.pFileDescriptor = fileDescriptor;
         }
 
         @NonNull
         public FileDescriptor getFD() {
             return this.pFileDescriptor;
+        }
+
+        @NonNull
+        public String getUrl() {
+            return this.pUrl;
         }
 
         public boolean isRecording() {
@@ -159,8 +164,6 @@ public class StreamRecorder implements Recorder {
 
         @Override
         protected Boolean doInBackground( Void... params ) {
-            MyLog.d( SystemClock.elapsedRealtime() + "" );
-
             ParcelFileDescriptor pfd;
             try {
                 pfd = ParcelFileDescriptor.dup( this.pTC.getFD() );
@@ -171,7 +174,7 @@ public class StreamRecorder implements Recorder {
 
             FileOutputStream outputStream;
             try {
-                URL url = new URL( "http://s8.streammonster.com:8325/" );
+                URL url = new URL( this.pTC.getUrl() );
                 InputStream inputStream = url.openStream();
                 outputStream = new FileOutputStream( pfd.getFileDescriptor() );
                 this.pTC.setRecording( true );

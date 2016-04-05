@@ -9,6 +9,7 @@ import android.view.ViewStub;
 import android.widget.Chronometer;
 
 import com.grapsas.android.streamrecorder.R;
+import com.grapsas.android.streamrecorder.activities.MainActivity;
 import com.grapsas.android.streamrecorder.misc.media.MicRecorder;
 import com.grapsas.android.streamrecorder.misc.media.Recorder;
 import com.grapsas.android.streamrecorder.misc.media.StreamRecorder;
@@ -92,10 +93,13 @@ public class MediaRecorderView {
             this.recorder = new MicRecorder();
         }
         else if( type == STREAM_RECORDER ) {
+            String url = ( (MainActivity) getActivity() ).getUrl4Rec();
+            if( url == null )
+                return;
             prefix = "s.";
             suffix = "";
             createRecordingView();
-            this.recorder = new StreamRecorder( this.chronometer );
+            this.recorder = new StreamRecorder( url, this.chronometer );
         }
         else
             return;

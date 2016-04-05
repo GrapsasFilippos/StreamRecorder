@@ -14,7 +14,14 @@
     <string name="FileHasntRemoved">File hasn\'t removed.</string>
     <string name="TheFileRemovedSuccessfully">The file removed successfully.</string>
     <string name="RemoveFilePermanently">The following file will be permanently deleted:</string>
+    <string name="RemoveURL">The following url will be permanently deleted:</string>
     <string name="Cancel">Cancel</string>
     <string name="Mic">Mic</string>
     <string name="Streams">Streams</string>
+    <string name="title_activity_favorites_urls">FavoritesURLsActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="Save_Rec"><![CDATA[Save & Rec]]></string>
+    <string name="Save">Save</string>
+    <string name="URL">URL</string>
+    <string name="Play">Play</string>
 </resources>
