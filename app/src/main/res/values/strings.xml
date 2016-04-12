@@ -24,4 +24,6 @@
     <string name="Save">Save</string>
     <string name="URL">URL</string>
     <string name="Play">Play</string>
+    <string name="Rec">Rec</string>
+    <string name="clear">Clear</string>
 </resources>

@@ -26,6 +26,7 @@ import com.grapsas.android.lib.slidingtabs.slidingtabs.SlidingTabLayout;
 import com.grapsas.android.streamrecorder.App;
 import com.grapsas.android.streamrecorder.MyActivity;
 import com.grapsas.android.streamrecorder.R;
+import com.grapsas.android.streamrecorder.dialogs.AddFavoriteURL;
 import com.grapsas.android.streamrecorder.dialogs.DeleteFile;
 import com.grapsas.android.streamrecorder.exception.NeedActivityException;
 import com.grapsas.android.streamrecorder.exception.NeedWorkingDirectoryException;
@@ -53,7 +54,8 @@ public class MainActivity extends MyActivity implements
         MediaRecorderView.Events,
         MediaPlayerView.Events,
         DeleteFile.Response,
-        OnPageChangeListener {
+        OnPageChangeListener,
+        AddFavoriteURL.Interaction {
 
     // TODO: Add elevation
     private RelativeLayout recordingLayout;
@@ -99,10 +101,6 @@ public class MainActivity extends MyActivity implements
             slidingTabs.setOnPageChangeListener( new ViewPagerListener( this ) );
         }
 
-        this.micFab = ( FloatingActionButton ) findViewById( R.id.micFab );
-        this.sFabMenu = ( FloatingActionMenu ) findViewById( R.id.sFabMenu );
-        this.favFab = ( FloatingActionButton ) findViewById( R.id.favFab );
-        this.newFab = ( FloatingActionButton ) findViewById( R.id.newFab );
         this.initFabs();
 
         this.mediaRecorderView = new MediaRecorderView( this, R.id.stub_recording );
@@ -178,6 +176,11 @@ public class MainActivity extends MyActivity implements
     }
 
     private void initFabs() {
+        this.micFab = ( FloatingActionButton ) findViewById( R.id.micFab );
+        this.sFabMenu = ( FloatingActionMenu ) findViewById( R.id.sFabMenu );
+        this.favFab = ( FloatingActionButton ) findViewById( R.id.favFab );
+        this.newFab = ( FloatingActionButton ) findViewById( R.id.newFab );
+
         this.micFab.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
@@ -193,7 +196,7 @@ public class MainActivity extends MyActivity implements
         this.newFab.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
-                startStreamRecording();
+                startAddFavoriteURL();
             }
         } );
     }
@@ -462,6 +465,28 @@ public class MainActivity extends MyActivity implements
         this.showFab();
     }
 
+
+    /*
+     * Implements interface AddFavoriteURL.Interaction
+     */
+    @Override
+    public void startAddFavoriteURL() {
+        AddFavoriteURL.newInstance( AddFavoriteURL.TYPE.JUST_REC ).show( getFragmentManager(), "" );
+    }
+
+    @Override
+    public void saveAndRec( @NonNull String url ) {
+    }
+
+    @Override
+    public void save( @NonNull String url ) {
+    }
+
+    @Override
+    public void rec( @NonNull String url ) {
+        this.setUrl4Rec( url );
+        this.startStreamRecording();
+    }
 
     /*
      * Inner classes

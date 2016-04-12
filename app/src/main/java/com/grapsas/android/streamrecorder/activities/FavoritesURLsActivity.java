@@ -67,24 +67,28 @@ public class FavoritesURLsActivity extends MyActivity implements
      * Implements AddFavoriteURL.Interaction
      */
     @Override
-    public void startAddFavoriteURL() {
-        AddFavoriteURL.newInstance().show( getFragmentManager(), "" );
+    public void startAddFavoriteURL( ) {
+        AddFavoriteURL.newInstance( AddFavoriteURL.TYPE.FAVORITE ).show( getFragmentManager(), "" );
     }
 
     @Override
-    public void saveAndRec( String url ) {
-        AddFavoriteURL.Interaction fragment = this.getFragment( R.id.fragment );
-        fragment.saveAndRec( url );
+    public void saveAndRec( @NonNull String url ) {
+        this.save( url );
+        this.rec( url );
     }
 
     @Override
-    public void save( String url ) {
+    public void save( @NonNull String url ) {
         AddFavoriteURL.Interaction fragment = this.getFragment( R.id.fragment );
         if( fragment == null )
             return;
         fragment.save( url );
     }
 
+    @Override
+    public void rec( @NonNull String url ) {
+        this.urlSelected( url );
+    }
 
     /*
      * Implements DeleteFavoriteURL.Interaction

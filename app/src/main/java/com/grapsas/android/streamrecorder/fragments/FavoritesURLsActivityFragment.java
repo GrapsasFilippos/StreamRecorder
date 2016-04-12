@@ -120,15 +120,18 @@ public class FavoritesURLsActivityFragment extends Fragment implements
     }
 
     @Override
-    public void saveAndRec( String url ) {
+    public void saveAndRec( @NonNull String url ) {
     }
 
     @Override
-    public void save( String url ) {
+    public void save( @NonNull String url ) {
         JSONArray jsonArray = adapter.getData();
         jsonArray.put( url );
         FavoritesURLs.setUrls( getContext(), jsonArray );
         adapter.notifyDataSetChanged();
     }
 
+    @Override
+    public void rec( @NonNull String url ) {
+    }
 }
