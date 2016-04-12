@@ -9,4 +9,18 @@
     <string name="Is_t_directory__">Δεν είναι κατάλογος:</string>
     <string name="Unable_to_prepare_MediaPlayer">Δεν ήταν δυνατή η προετοιμασία του MediaPlayer</string>
     <string name="Unable_to_set_data_source">Δεν ήταν δυνατός ο ορισμός της πηγής δεδομένων </string>
+    <string name="Cancel">Άκυρο</string>
+    <string name="FileHasntRemoved">Το αρχείο δεν διεγράφη.</string>
+    <string name="Mic">Μικρόφωνο</string>
+    <string name="Play">Αναπαραγωγή</string>
+    <string name="Rec">Εγγραφή</string>
+    <string name="Remove">Διαγραφή</string>
+    <string name="RemoveFilePermanently">Το ακόλουθο αρχείο θα διαγραφή οριστικά:</string>
+    <string name="RemoveURL">Ο ακόλουθος σύνδεσμος θα διαγραφή οριστικά: </string>
+    <string name="Save">Αποθήκευση</string>
+    <string name="Save_Rec"><![CDATA[Αποθήκευση & Εγγραφή]]></string>
+    <string name="TheFileRemovedSuccessfully">Το αρχείο διεγράφη επιτυχώς.</string>
+    <string name="action_settings">Ρυθμίσεις</string>
+    <string name="clear">Εκκαθάριση</string>
+    <string name="title_activity_favorites_urls">Αγαπημένα URLs</string>
 </resources>

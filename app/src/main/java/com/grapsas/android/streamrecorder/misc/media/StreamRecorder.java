@@ -18,6 +18,10 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 
 public class StreamRecorder implements Recorder {
 
@@ -175,7 +179,15 @@ public class StreamRecorder implements Recorder {
             FileOutputStream outputStream;
             try {
                 URL url = new URL( this.pTC.getUrl() );
-                InputStream inputStream = url.openStream();
+                InputStream inputStream;
+
+                OkHttpClient okHttpClient = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .url( url )
+                        .build();
+                Response response = okHttpClient.newCall( request ).execute();
+                inputStream = response.body().byteStream();
+
                 outputStream = new FileOutputStream( pfd.getFileDescriptor() );
                 this.pTC.setRecording( true );
                 int c;

@@ -17,12 +17,12 @@
     <string name="RemoveURL">The following url will be permanently deleted:</string>
     <string name="Cancel">Cancel</string>
     <string name="Mic">Mic</string>
-    <string name="Streams">Streams</string>
-    <string name="title_activity_favorites_urls">FavoritesURLsActivity</string>
+    <string name="Streams" translatable="false">Streams</string>
+    <string name="title_activity_favorites_urls">Favorites URLs</string>
     <string name="action_settings">Settings</string>
     <string name="Save_Rec"><![CDATA[Save & Rec]]></string>
     <string name="Save">Save</string>
-    <string name="URL">URL</string>
+    <string name="URL" translatable="false">URL</string>
     <string name="Play">Play</string>
     <string name="Rec">Rec</string>
     <string name="clear">Clear</string>
