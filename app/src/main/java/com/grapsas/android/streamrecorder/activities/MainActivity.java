@@ -131,6 +131,8 @@ public class MainActivity extends MyActivity implements
         MyLog.d( "----------------" );
         super.onResume();
         pagerFinishMoving();
+        if( this.getUrl4Rec() != null )
+            this.startStreamRecording();
     }
 
     @Override
@@ -154,7 +156,6 @@ public class MainActivity extends MyActivity implements
             case FavoritesURLsActivity.RESULT_CODE:
                 String url = data.getStringExtra( FavoritesURLsActivity.RESULT_URL_KEY );
                 this.setUrl4Rec( url );
-                this.startStreamRecording();
                 break;
         }
     }

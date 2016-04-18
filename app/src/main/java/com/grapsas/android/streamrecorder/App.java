@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+
 import java.lang.ref.WeakReference;
 
 
@@ -49,8 +50,10 @@ public class App implements Application.ActivityLifecycleCallbacks {
     public void setLastActivity( @Nullable Activity activity ) {
         if( activity == null )
             weakLastActivity = null;
-        else
+        else {
+            setPreActivityContext( activity.getApplicationContext() );
             weakLastActivity = new WeakReference<>( activity );
+        }
     }
 
     @Nullable

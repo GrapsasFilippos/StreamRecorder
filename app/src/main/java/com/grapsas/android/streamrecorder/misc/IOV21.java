@@ -58,9 +58,6 @@ public class IOV21 {
         if( UriPermissions.size() == 0 )
             throw new NeedWorkingDirectoryException();
         else {
-//            for( UriPermission permission : UriPermissions) {
-//                MyLog.d( permission.toString() );
-//            }
             //noinspection UnnecessaryLocalVariable
             Uri wDir = UriPermissions.get( 0 ).getUri();
             return wDir;
