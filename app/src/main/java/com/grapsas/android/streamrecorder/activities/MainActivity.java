@@ -24,7 +24,6 @@ import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.grapsas.android.lib.slidingtabs.slidingtabs.SlidingTabLayout;
 import com.grapsas.android.streamrecorder.App;
-import com.grapsas.android.streamrecorder.MyActivity;
 import com.grapsas.android.streamrecorder.R;
 import com.grapsas.android.streamrecorder.dialogs.AddFavoriteURL;
 import com.grapsas.android.streamrecorder.dialogs.DeleteFile;
@@ -415,14 +414,12 @@ public class MainActivity extends MyActivity implements
     @Override
     public void onPlayerViewShow( FileListItem fileListItem ) {
         this.pFli = fileListItem;
-
         this.pMenu.getItem( 0 ).setVisible( true );
     }
 
     @Override
     public void onPlayerViewHide() {
         this.pFli = null;
-
         this.pMenu.getItem( 0 ).setVisible( false );
     }
 

@@ -8,13 +8,11 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
-import com.grapsas.android.streamrecorder.MyActivity;
 import com.grapsas.android.streamrecorder.R;
 import com.grapsas.android.streamrecorder.dialogs.AddFavoriteURL;
 import com.grapsas.android.streamrecorder.dialogs.DeleteFavoriteURL;
 import com.grapsas.android.streamrecorder.fragments.FavoritesURLsActivityFragment;
 import com.grapsas.android.streamrecorder.misc.FavoritesURLs;
-import com.grapsas.android.streamrecorder.misc.MyLog;
 
 
 public class FavoritesURLsActivity extends MyActivity implements

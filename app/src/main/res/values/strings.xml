@@ -26,4 +26,5 @@
     <string name="Play">Play</string>
     <string name="Rec">Rec</string>
     <string name="clear">Clear</string>
+    <string name="Show_player">Show player</string>
 </resources>

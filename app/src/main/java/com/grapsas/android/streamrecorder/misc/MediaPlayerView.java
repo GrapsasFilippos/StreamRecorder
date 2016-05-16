@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.grapsas.android.streamrecorder.R;
+import com.grapsas.android.streamrecorder.activities.MyActivity;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,11 +89,14 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
         this.triggerOnPlayerViewHide();
     }
 
+    public void startPlayingOnlyGUI( @NonNull FileListItem fileListItem ) {
+    }
+
 
     /*
      * Media Player
      */
-    public void startPlaying( FileListItem fileListItem )
+    public void startPlaying( @NonNull FileListItem fileListItem )
             throws com.grapsas.android.streamrecorder.exception.IOException {
         this.fli = fileListItem;
         AppCompatActivity activity = getActivity();

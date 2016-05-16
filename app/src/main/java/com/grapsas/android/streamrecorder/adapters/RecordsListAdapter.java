@@ -7,10 +7,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.grapsas.android.streamrecorder.R;
 import com.grapsas.android.streamrecorder.misc.FileListItem;
+import com.grapsas.android.streamrecorder.misc.MyLog;
 
 
 public class RecordsListAdapter extends BaseAdapter {
@@ -53,10 +55,17 @@ public class RecordsListAdapter extends BaseAdapter {
         TextView fileName = (TextView) convertView.findViewById( R.id.fileName );
         TextView modified = (TextView) convertView.findViewById( R.id.modifiedV );
         TextView size = (TextView) convertView.findViewById( R.id.sizeV );
+        ImageButton imageButton = (ImageButton) convertView.findViewById( R.id.imageButton );
 
         fileName.setText( fileListItem.getName() );
         modified.setText( fileListItem.getModifiedHuman() );
         size.setText( fileListItem.getSizeHuman( parent.getContext() ) );
+        imageButton.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick( View v ) {
+                MyLog.d( "Clicked" );
+            }
+        } );
 
         return convertView;
     }
