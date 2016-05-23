@@ -55,6 +55,14 @@
             android:layout_gravity="bottom|end"
             android:src="@drawable/ic_star_white_24dp" />
 
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/existsFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_size="mini"
+            android:layout_gravity="bottom|end"
+            android:src="@drawable/ic_view_list_black_white_24dp" />
+
     </com.github.clans.fab.FloatingActionMenu>
 
 </android.support.design.widget.CoordinatorLayout>

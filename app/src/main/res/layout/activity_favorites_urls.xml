@@ -24,6 +24,4 @@
 
     <include layout="@layout/content_favorites_urls"/>
 
-    <!--fab-->
-
 </android.support.design.widget.CoordinatorLayout>
