@@ -69,6 +69,7 @@ public class MainActivity extends MyActivity implements
     private FloatingActionButton micFab;
     private FloatingActionMenu sFabMenu;
     private FloatingActionButton favFab;
+    private FloatingActionButton preExistsFab;
     private FloatingActionButton newFab;
 
     private FileListItem pFli;
@@ -179,6 +180,7 @@ public class MainActivity extends MyActivity implements
         this.micFab = ( FloatingActionButton ) findViewById( R.id.micFab );
         this.sFabMenu = ( FloatingActionMenu ) findViewById( R.id.sFabMenu );
         this.favFab = ( FloatingActionButton ) findViewById( R.id.favFab );
+        this.preExistsFab = ( FloatingActionButton ) findViewById( R.id.preExistsFab );
         this.newFab = ( FloatingActionButton ) findViewById( R.id.newFab );
 
         this.micFab.setOnClickListener( new View.OnClickListener() {
@@ -190,9 +192,15 @@ public class MainActivity extends MyActivity implements
         this.favFab.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
-                startFavActivity();
+                startFavActivity( FavoritesURLsActivity.TYPE_FAV );
             }
         } );
+        this.preExistsFab.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick( View v ) {
+                startFavActivity( FavoritesURLsActivity.TYPE_PRE_EXISTS );
+            }
+        });
         this.newFab.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
@@ -226,9 +234,16 @@ public class MainActivity extends MyActivity implements
         this.hideFabs( false );
     }
 
-    protected void startFavActivity() {
+    protected void startFavActivity( @NonNull String type ) {
         Intent intent = new Intent( this, FavoritesURLsActivity.class );
+        Bundle bundle = new Bundle();
+        bundle.putString( FavoritesURLsActivity.TYPE_KEY, type );
+        intent.putExtras( bundle );
         startActivityForResult( intent, FavoritesURLsActivity.RESULT_CODE );
+    }
+
+    protected void startFavActivity() {
+        this.startFavActivity( FavoritesURLsActivity.TYPE_FAV );
     }
 
 

@@ -68,8 +68,14 @@ public class FavoritesURLsActivityFragment extends Fragment implements
     /*
      * GUI Tools
      */
+    @NonNull
+    private String getType() {
+        String type = ( (FavoritesURLsActivity) getActivity() ).getType();
+        return type;
+    }
+
     private void initListView( @NonNull View rootView ) {
-        adapter = new FavoritesURLsAdapter( this.getContext() );
+        adapter = new FavoritesURLsAdapter( this.getContext(), this.getType() );
         ListView listView = (ListView) rootView.findViewById( R.id.listView );
         listView.setAdapter( adapter );
         listView.setOnItemLongClickListener( new AdapterView.OnItemLongClickListener() {
@@ -77,7 +83,7 @@ public class FavoritesURLsActivityFragment extends Fragment implements
             public boolean onItemLongClick( AdapterView< ? > parent, View view, int position, long id ) {
                 if( pDeleteListener == null )
                     return false;
-                pDeleteListener.startDeleteFavoriteURL( position, adapter.getItem( position ) );
+                pDeleteListener.startDeleteFavoriteURL( position, adapter.getItem( position ).getURL() );
                 return true;
             }
         } );
@@ -85,7 +91,7 @@ public class FavoritesURLsActivityFragment extends Fragment implements
             @Override
             public void onItemClick( AdapterView< ? > parent, View view, int position, long id ) {
                 FavoritesURLsActivity activity = (FavoritesURLsActivity) getActivity();
-                activity.urlSelected( adapter.getItem( position ) );
+                activity.urlSelected( adapter.getItem( position ).getURL() );
             }
         } );
 

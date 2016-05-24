@@ -19,8 +19,17 @@ public class FavoritesURLsActivity extends MyActivity implements
         AddFavoriteURL.Interaction,
         DeleteFavoriteURL.Interaction {
 
+    public static final String TYPE_KEY = "type";
+    public static final String TYPE_FAV = "fav";
+    public static final String TYPE_PRE_EXISTS = "pre_exists";
+    public static final String TYPE_DEFAULT = TYPE_FAV;
+
     public static final int RESULT_CODE = 2;
     public static final String RESULT_URL_KEY = "url";
+
+    public static final String PRE_EXISTS_FILE_NAME = "urls.json";
+
+    private String pType;
 
 
     /*
@@ -33,8 +42,9 @@ public class FavoritesURLsActivity extends MyActivity implements
 
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
-        if( getSupportActionBar() != null )
+        if( getSupportActionBar() != null ) {
             getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        }
     }
 
     @Override
@@ -46,6 +56,18 @@ public class FavoritesURLsActivity extends MyActivity implements
 
 
     // Tools
+    @NonNull
+    public String getType() {
+        if( this.pType == null ) {
+            Bundle args = getIntent().getExtras();
+            this.pType = args.getString( TYPE_KEY );
+        }
+        if( this.pType == null ) {
+            this.pType = TYPE_DEFAULT;
+        }
+        return this.pType;
+    }
+
     @Nullable
     public AddFavoriteURL.Interaction getFragment( int rId ) {
         AddFavoriteURL.Interaction fragment = (AddFavoriteURL.Interaction)
