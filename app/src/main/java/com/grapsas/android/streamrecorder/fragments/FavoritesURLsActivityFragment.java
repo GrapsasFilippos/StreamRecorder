@@ -78,15 +78,17 @@ public class FavoritesURLsActivityFragment extends Fragment implements
         adapter = new FavoritesURLsAdapter( this.getContext(), this.getType() );
         ListView listView = (ListView) rootView.findViewById( R.id.listView );
         listView.setAdapter( adapter );
-        listView.setOnItemLongClickListener( new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick( AdapterView< ? > parent, View view, int position, long id ) {
-                if( pDeleteListener == null )
-                    return false;
-                pDeleteListener.startDeleteFavoriteURL( position, adapter.getItem( position ).getURL() );
-                return true;
-            }
-        } );
+        if( this.getType().equals( FavoritesURLsActivity.TYPE_FAV ) ) {
+            listView.setOnItemLongClickListener( new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick( AdapterView< ? > parent, View view, int position, long id ) {
+                    if( pDeleteListener == null )
+                        return false;
+                    pDeleteListener.startDeleteFavoriteURL( position, adapter.getItem( position ).getURL() );
+                    return true;
+                }
+            } );
+        }
         listView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick( AdapterView< ? > parent, View view, int position, long id ) {
@@ -100,13 +102,19 @@ public class FavoritesURLsActivityFragment extends Fragment implements
 
     private void initFAB( @NonNull View rootView ) {
         FloatingActionButton fab = (FloatingActionButton) rootView.findViewById( R.id.fab );
-        fab.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick( View v ) {
-                if( pAddListener != null )
-                    pAddListener.startAddFavoriteURL();
-            }
-        } );
+        if( this.getType().equals( FavoritesURLsActivity.TYPE_FAV ) ) {
+            fab.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick( View v ) {
+                    if( pAddListener != null )
+                        pAddListener.startAddFavoriteURL();
+                }
+            } );
+            fab.setVisibility( View.VISIBLE );
+        }
+        else {
+            fab.setVisibility( View.GONE );
+        }
     }
 
 

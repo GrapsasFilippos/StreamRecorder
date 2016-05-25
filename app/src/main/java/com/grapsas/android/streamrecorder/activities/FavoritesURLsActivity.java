@@ -45,6 +45,13 @@ public class FavoritesURLsActivity extends MyActivity implements
         if( getSupportActionBar() != null ) {
             getSupportActionBar().setDisplayHomeAsUpEnabled( true );
         }
+
+        if( this.getType().equals( TYPE_FAV ) ) {
+            this.setTitle( R.string.title_activity_favorites_urls );
+        }
+        else if( this.getType().equals( TYPE_PRE_EXISTS ) ) {
+            this.setTitle( R.string.title_activity_preexists_urls );
+        }
     }
 
     @Override
