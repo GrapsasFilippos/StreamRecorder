@@ -6,12 +6,8 @@
     android:orientation="horizontal"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:descendantFocusability="blocksDescendants" >
-
-    <!--<CheckBox-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="fill_parent"-->
-        <!--android:id="@+id/checkBox"/>-->
+    android:descendantFocusability="blocksDescendants"
+    android:paddingBottom="10dp" >
 
     <LinearLayout
         android:orientation="vertical"
@@ -23,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="File Name"
+            android:text="@string/FileName"
             android:id="@+id/fileName"
             android:gravity="center"
             android:paddingTop="10dp"
@@ -51,7 +47,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="N/A"
+                    android:text="@string/N_A"
                     android:id="@+id/sizeV"
                     android:maxLines="1"/>
 
@@ -59,7 +55,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text=" @ "
+                    android:text="@string/_AT_"
                     android:id="@+id/textView3"/>
             </LinearLayout>
 
@@ -79,7 +75,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:text="N/A"
+                    android:text="@string/N_A"
                     android:id="@+id/modifiedV"
                     android:maxLines="1"/>
             </LinearLayout>

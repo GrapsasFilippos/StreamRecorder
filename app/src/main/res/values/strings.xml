@@ -28,4 +28,7 @@
     <string name="clear">Clear</string>
     <string name="Show_player">Show player</string>
     <string name="title_activity_preexists_urls">Pre Exists</string>
+    <string name="FileName">File Name</string>
+    <string name="N_A">N/A</string>
+    <string name="_AT_">\@</string>
 </resources>
