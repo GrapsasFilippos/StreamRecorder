@@ -13,9 +13,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.grapsas.android.streamrecorder.R;
-import com.grapsas.android.streamrecorder.activities.MyActivity;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
@@ -45,7 +43,8 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
     }
 
 
-    public void showPlayingView( @NonNull String fileName, @NonNull String fileSize, @NonNull String duration ) {
+    private void showPlayingView( @NonNull String fileName,
+                                 @NonNull String fileSize, @NonNull String duration ) {
         AppCompatActivity activity = getActivity();
         if( activity == null )
             return;
@@ -54,7 +53,7 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
             this.playingView = ( ( ViewStub ) activity.findViewById( this.mStubResourceId ) ).inflate();
             this.playPauseButton = (ImageButton ) this.playingView.findViewById( R.id.playPause );
             this.durationT = (TextView ) this.playingView.findViewById( R.id.duration );
-            this.playingView.findViewById( R.id.stop ).setOnClickListener( new View.OnClickListener() {
+            this.playingView.findViewById( R.id.close ).setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
                     stopPlaying();
@@ -90,13 +89,18 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
     }
 
     public void startPlayingOnlyGUI( @NonNull FileListItem fileListItem ) {
+        try {
+            this.startPlaying( fileListItem, false );
+        } catch( com.grapsas.android.streamrecorder.exception.IOException e ) {
+            e.printStackTrace();
+        }
     }
 
 
     /*
      * Media Player
      */
-    public void startPlaying( @NonNull FileListItem fileListItem )
+    public void startPlaying( @NonNull FileListItem fileListItem, boolean flagPlay )
             throws com.grapsas.android.streamrecorder.exception.IOException {
         this.fli = fileListItem;
         AppCompatActivity activity = getActivity();
@@ -129,9 +133,22 @@ public class MediaPlayerView implements MediaPlayer.OnCompletionListener {
         }
         int duration = this.player.getDuration();
         duration /= 1000;
-        String durationS = String.format( "%d:%02d:%02d", duration / 3600, ( duration % 3600 ) / 60, ( duration % 60 ) );
-        this.showPlayingView( fileListItem.getName(), fileListItem.getSizeHuman( activity ), durationS );
-        this.playPausePlaying();
+        String durationS = String.format(
+                "%d:%02d:%02d", duration / 3600, ( duration % 3600 ) / 60, ( duration % 60 ) );
+        this.showPlayingView(
+                fileListItem.getName(), fileListItem.getSizeHuman( activity ), durationS );
+        if( flagPlay ) {
+            this.playPausePlaying();
+        }
+        else {
+            this.triggerOnStartPlaying();
+            this.playPauseButton.setImageResource( R.drawable.ic_play_arrow_black_24dp );
+        }
+    }
+
+    public void startPlaying( @NonNull FileListItem fileListItem )
+            throws com.grapsas.android.streamrecorder.exception.IOException {
+        this.startPlaying( fileListItem, true );
     }
 
     public void playPausePlaying() {

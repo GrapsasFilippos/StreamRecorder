@@ -246,6 +246,11 @@ public class MainActivity extends MyActivity implements
         this.startFavActivity( FavoritesURLsActivity.TYPE_FAV );
     }
 
+    public void showPlayingView( View v ) {
+        FileListItem fileListItem = (FileListItem) v.getTag();
+        this.showPlayingView( fileListItem );
+    }
+
 
     /*
      * Tools
@@ -392,6 +397,10 @@ public class MainActivity extends MyActivity implements
         this.mediaPlayerView.stopPlaying();
     }
 
+    private void showPlayingView( FileListItem fileListItem ) {
+        this.mediaPlayerView.startPlayingOnlyGUI( fileListItem );
+    }
+
 
     /*
      * Implements interface MediaRecorderView.Events
@@ -471,6 +480,7 @@ public class MainActivity extends MyActivity implements
     @Override
     public void pagerStartMoving() {
         this.hideFabs();
+        this.mediaPlayerView.stopPlaying();
     }
 
     @Override

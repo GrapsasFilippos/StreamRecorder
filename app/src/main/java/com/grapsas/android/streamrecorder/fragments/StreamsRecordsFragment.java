@@ -42,7 +42,7 @@ public class StreamsRecordsFragment extends Fragment implements OnDataChanged {
                               Bundle savedInstanceState ) {
         View rootView = inflater.inflate( R.layout.fragment_mic_records, container, false );
 
-        this.adapter = new RecordsListAdapter( new FileListItem[ 0 ] );
+        this.adapter = new RecordsListAdapter( getActivity(), new FileListItem[ 0 ] );
         this.listView = ( ListView ) rootView.findViewById( R.id.listView );
         this.listView.setAdapter( adapter );
         this.listView = (ListView) rootView.findViewById( R.id.listView );

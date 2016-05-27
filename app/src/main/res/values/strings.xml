@@ -31,4 +31,6 @@
     <string name="FileName">File Name</string>
     <string name="N_A">N/A</string>
     <string name="_AT_">\@</string>
+    <string name="Close_player">Close player</string>
+    <string name="Play_Pause">Play/Pause</string>
 </resources>
