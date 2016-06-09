@@ -25,4 +25,8 @@
     <string name="title_activity_favorites_urls">Αγαπημένα URLs</string>
     <string name="title_activity_preexists_urls">Προϋπάρχων</string>
     <string name="Show_player">Εμφάνιση αναπαραγωγέα </string>
+    <string name="Close_player">Κλείσιμο αναπαραγωγέα</string>
+    <string name="FileName">Όνομα Αρχείου</string>
+    <string name="N_A">Δ/Υ</string>
+    <string name="Play_Pause">Αναπαραγωγή/Παύση </string>
 </resources>
